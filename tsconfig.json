@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "declaration":true,
+    "module": "commonjs",
+    "target": "es5",
+    "outFile":"../../out/runtime/index.js",
+    "inlineSourceMap":true,
+    "inlineSources":true,
+    "experimentalDecorators":true,
+    "noLib":true
+  },
+  "files":[
+    "../../tsd/lib.es6.d.ts",
+    "../../tsd/node.d.ts",
+    "./Path.ts",
+    "./Module.ts",
+    "./Loader.ts",
+    "./System.ts"
+  ]
+}
