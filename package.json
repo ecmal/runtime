@@ -3,7 +3,8 @@
   "vendor"  : "ecmal",
   "version" : "0.0.1",
   "scripts" : {
-  	"build" : "tsc -p src"
+    "postinstall"   : "tsc -p src",
+  	"build"         : "tsc -p src"
   },
   "bundle"   : {
     "format" : "global"
