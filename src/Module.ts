@@ -14,7 +14,7 @@ namespace Ecmal {
         parent?:string|Module;
         dependencies?:(string|Module)[]
         source?:string
-        executable?:Function;
+        executable?:ObjectConstructor;
         defined?:Boolean;
         exports?:any;
     }

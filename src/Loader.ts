@@ -40,7 +40,7 @@ namespace Ecmal {
                     .then(()=>this.eval(module))
                     .then(()=>{
                         var dir = Path.dirname(module.url);
-                        var dependencies = module.dependencies.map(d=>{
+                        var dependencies:Promise<Module>[] = module.dependencies.map((d):Promise<Module>=>{
                             var path = d+'.js';
                             if(path[0]=='.'){
                                 path = Path.resolve(dir,path)
@@ -49,7 +49,7 @@ namespace Ecmal {
                             }
                             return this.fetch(this.get(path));
                         });
-                        return Promise.all(dependencies).then((modules:Module[])=>{
+                        return Promise.all(dependencies).then((modules:Module[]):Module=>{
                             for(var d=0;d<modules.length;d++){
                                 module.dependencies[d] = modules[d];
                                 modules[d].parent = module;
@@ -66,11 +66,12 @@ namespace Ecmal {
             }else{
                 module.defined = true;
                 module.exports = {};
-                var definer = new module.executable((name,val)=>{
+                var definer:any = new module.executable((name,val)=>{
                     module.exports[name] = val;
                 });
                 if(module.dependencies.length){
-                    return Promise.all(module.dependencies.map(m=>this.define(m).then(m=>m.exports))).then((exps:any)=>{
+                    var promises:Promise<any>[] = module.dependencies.map((m):any=>this.define(m).then(m=>m.exports));
+                    return Promise.all(promises).then((exps:any)=>{
                         for(var i=0;i<exps.length;i++){
                             definer.setters[i](exps[i])
                         }
