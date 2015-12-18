@@ -22,10 +22,12 @@ namespace Ecmal {
             }
         }
         config(options:any){
-            console.info(options);
+            if(options.base){
+                this.loader.base = options.base;
+            }
         }
-        register(deps:string[],exec:Function){
-            this.loader.register(deps,exec);
+        register(name:string,deps:string[],exec:Function){
+            this.loader.register(name,deps,exec);
         }
         import(name){
             return this.loader.import(name)

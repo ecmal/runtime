@@ -1,0 +1,11 @@
+<script src="runtime/index.js"></script>
+<script>
+    System.config({
+        base : '/ecmal/runtime/out'
+    });
+    System.import('application/App').catch(function(e){
+        console.error(e.stack);
+    });
+</script>
+
+

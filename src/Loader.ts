@@ -4,12 +4,20 @@ namespace Ecmal {
         public runtime:string;
         public current:Module;
         public modules:Modules;
+        public options:any;
 
         constructor(){
+            this.options = {};
             this.modules = {};
         }
-        get base(){
-            return Path.resolve(Path.dirname(this.runtime),'../');
+        get base():string{
+            if(!this.options.base){
+                this.options.base = Path.resolve(Path.dirname(this.runtime),'../');
+            }
+            return this.options.base;
+        }
+        set base(v:string){
+            this.options.base=v;
         }
         abstract eval(url):Promise<string>;
         abstract read(url):Promise<string>;
@@ -22,7 +30,7 @@ namespace Ecmal {
             }
             return module;
         }
-        register(dependencies,executable){
+        register(name:string,dependencies:string[],executable:any){
             this.current.dependencies = dependencies;
             this.current.executable = executable;
         }
@@ -164,11 +172,12 @@ namespace Ecmal {
         }
         eval(module:Module):Promise<Module> {
             this.current = module;
+            var aHead = document.querySelector('head');
             var aScript = document.createElement('script');
             aScript.type = 'text/javascript';
             aScript.id = module.id;
             aScript.text = module.source+'\n//# sourceURL='+module.url;
-            this.script.parentElement.appendChild(aScript);
+            aHead.appendChild(aScript);
             this.current = null;
             return Promise.resolve(module);
         }
