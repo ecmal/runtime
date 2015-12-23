@@ -26,8 +26,12 @@ namespace Ecmal {
                 this.loader.base = options.base;
             }
         }
-        register(name:string,deps:string[],exec:Function){
-            this.loader.register(name,deps,exec);
+        register(name,deps,exec){
+            if(Array.isArray(name)){
+                this.loader.register('@',name,deps);
+            }else{
+                this.loader.register(name,deps,exec);
+            }
         }
         import(name){
             return this.loader.import(name)
