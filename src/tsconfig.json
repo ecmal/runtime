@@ -11,6 +11,7 @@
   },
   "files":[
     "./tsd/core.d.ts",
+    "./tsd/browser.d.ts",
     "./tsd/node.d.ts",
     "./Path.ts",
     "./Module.ts",
