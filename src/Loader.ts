@@ -38,11 +38,15 @@ namespace Ecmal {
             var url = Path.resolve(this.base,name+'.js');
             var dir = Path.dirname(url);
             var mod = this.get(url);
-            return this.fetch(mod).then((m:Module)=>this.define(m)).then((m:Module)=>m.exports);
+            if(mod.exports){
+                return Promise.resolve(mod.exports)
+            }else{
+                return this.fetch(mod).then((m:Module)=>this.define(m)).then((m:Module)=>m.exports);
+            }
         }
         fetch(module:Module):Promise<Module> {
             var promise = Promise.resolve(module);
-            if(typeof module.source=='undefined'){
+            if(typeof module.source=='undefined' && !module.defined){
                 module.source = '';
                 promise = this.read(module)
                     .then(()=>this.eval(module))
@@ -114,6 +118,16 @@ namespace Ecmal {
         }
         get main():string {
             return process.argv[2];
+        }
+        get(name){
+            var mod = super.get(name);
+            if(mod.id.indexOf('node/')==0){
+                mod.defined = true;
+                mod.exports = require(mod.id.substring(5));
+                return mod;
+            }else{
+                return mod;
+            }
         }
         read(module:Module):Promise<Module> {
             return new Promise((accept, reject)=> {
