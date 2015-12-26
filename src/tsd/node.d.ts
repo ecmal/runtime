@@ -393,18 +393,18 @@ interface NodeBuffer {
 *                   MODULES                     *
 *                                               *
 ************************************************/
-declare module "buffer" {
+declare module "node/buffer" {
     export var INSPECT_MAX_BYTES: number;
 }
 
-declare module "querystring" {
+declare module "node/querystring" {
     export function stringify(obj: any, sep?: string, eq?: string): string;
     export function parse(str: string, sep?: string, eq?: string, options?: { maxKeys?: number; }): any;
     export function escape(str: string): string;
     export function unescape(str: string): string;
 }
 
-declare module "events" {
+declare module "node/events" {
     export class EventEmitter implements NodeJS.EventEmitter {
         static listenerCount(emitter: EventEmitter, event: string): number;
 
@@ -419,10 +419,10 @@ declare module "events" {
    }
 }
 
-declare module "http" {
-    import * as events from "events";
-    import * as net from "net";
-    import * as stream from "stream";
+declare module "node/http" {
+    import * as events from "node/events";
+    import * as net from "node/net";
+    import * as stream from "node/stream";
 
     export interface RequestOptions {
         protocol?: string;
@@ -581,9 +581,9 @@ declare module "http" {
     export var globalAgent: Agent;
 }
 
-declare module "cluster" {
-    import * as child from "child_process";
-    import * as events from "events";
+declare module "node/cluster" {
+    import * as child from "node/child_process";
+    import * as events from "node/events";
 
     export interface ClusterSettings {
         exec?: string;
@@ -621,8 +621,8 @@ declare module "cluster" {
     export function emit(event: string, ...args: any[]): boolean;
 }
 
-declare module "zlib" {
-    import * as stream from "stream";
+declare module "node/zlib" {
+    import * as stream from "node/stream";
     export interface ZlibOptions { chunkSize?: number; windowBits?: number; level?: number; memLevel?: number; strategy?: number; dictionary?: any; }
 
     export interface Gzip extends stream.Transform { }
@@ -690,7 +690,7 @@ declare module "zlib" {
     export var Z_NULL: number;
 }
 
-declare module "os" {
+declare module "node/os" {
     export function tmpdir(): string;
     export function hostname(): string;
     export function type(): string;
@@ -706,10 +706,10 @@ declare module "os" {
     export var EOL: string;
 }
 
-declare module "https" {
-    import * as tls from "tls";
-    import * as events from "events";
-    import * as http from "http";
+declare module "node/https" {
+    import * as tls from "node/tls";
+    import * as events from "node/events";
+    import * as http from "node/http";
 
     export interface ServerOptions {
         pfx?: any;
@@ -752,7 +752,7 @@ declare module "https" {
     export var globalAgent: Agent;
 }
 
-declare module "punycode" {
+declare module "node/punycode" {
     export function decode(string: string): string;
     export function encode(string: string): string;
     export function toUnicode(domain: string): string;
@@ -765,9 +765,9 @@ declare module "punycode" {
     export var version: any;
 }
 
-declare module "repl" {
-    import * as stream from "stream";
-    import * as events from "events";
+declare module "node/repl" {
+    import * as stream from "node/stream";
+    import * as events from "node/events";
 
     export interface ReplOptions {
         prompt?: string;
@@ -783,9 +783,9 @@ declare module "repl" {
     export function start(options: ReplOptions): events.EventEmitter;
 }
 
-declare module "readline" {
-    import * as events from "events";
-    import * as stream from "stream";
+declare module "node/readline" {
+    import * as events from "node/events";
+    import * as stream from "node/stream";
 
     export interface ReadLine extends events.EventEmitter {
         setPrompt(prompt: string): void;
@@ -805,7 +805,7 @@ declare module "readline" {
     export function createInterface(options: ReadLineOptions): ReadLine;
 }
 
-declare module "vm" {
+declare module "node/vm" {
     export interface Context { }
     export interface Script {
         runInThisContext(): void;
@@ -818,9 +818,9 @@ declare module "vm" {
     export function createScript(code: string, filename?: string): Script;
 }
 
-declare module "child_process" {
-    import * as events from "events";
-    import * as stream from "stream";
+declare module "node/child_process" {
+    import * as events from "node/events";
+    import * as stream from "node/stream";
 
     export interface ChildProcess extends events.EventEmitter {
         stdin:  stream.Writable;
@@ -916,7 +916,7 @@ declare module "child_process" {
     }): string | Buffer;
 }
 
-declare module "url" {
+declare module "node/url" {
     export interface Url {
         href?: string;
         protocol?: string;
@@ -937,7 +937,7 @@ declare module "url" {
     export function resolve(from: string, to: string): string;
 }
 
-declare module "dns" {
+declare module "node/dns" {
     export function lookup(domain: string, family: number, callback: (err: Error, address: string, family: number) =>void ): string;
     export function lookup(domain: string, callback: (err: Error, address: string, family: number) =>void ): string;
     export function resolve(domain: string, rrtype: string, callback: (err: Error, addresses: string[]) =>void ): string[];
@@ -952,8 +952,8 @@ declare module "dns" {
     export function reverse(ip: string, callback: (err: Error, domains: string[]) =>void ): string[];
 }
 
-declare module "net" {
-    import * as stream from "stream";
+declare module "node/net" {
+    import * as stream from "node/stream";
 
     export interface Socket extends stream.Duplex {
         // Extended base methods
@@ -1020,8 +1020,8 @@ declare module "net" {
     export function isIPv6(input: string): boolean;
 }
 
-declare module "dgram" {
-    import * as events from "events";
+declare module "node/dgram" {
+    import * as events from "node/events";
 
     interface RemoteInfo {
         address: string;
@@ -1050,9 +1050,9 @@ declare module "dgram" {
     }
 }
 
-declare module "fs" {
-    import * as stream from "stream";
-    import * as events from "events";
+declare module "node/fs" {
+    import * as stream from "node/stream";
+    import * as events from "node/events";
 
     interface Stats {
         isFile(): boolean;
@@ -1331,7 +1331,7 @@ declare module "fs" {
     }): WriteStream;
 }
 
-declare module "path" {
+declare module "node/path" {
 
     /**
      * A parsed path object generated by path.parse() or consumed by path.format().
@@ -1477,7 +1477,7 @@ declare module "path" {
     }
 }
 
-declare module "string_decoder" {
+declare module "node/string_decoder" {
     export interface NodeStringDecoder {
         write(buffer: Buffer): string;
         detectIncompleteChar(buffer: Buffer): number;
@@ -1487,10 +1487,10 @@ declare module "string_decoder" {
     };
 }
 
-declare module "tls" {
-    import * as crypto from "crypto";
-    import * as net from "net";
-    import * as stream from "stream";
+declare module "node/tls" {
+    import * as crypto from "node/crypto";
+    import * as net from "node/net";
+    import * as stream from "node/stream";
 
     var CLIENT_RENEG_LIMIT: number;
     var CLIENT_RENEG_WINDOW: number;
@@ -1587,7 +1587,7 @@ declare module "tls" {
     export function createSecureContext(details: SecureContextOptions): SecureContext;
 }
 
-declare module "crypto" {
+declare module "node/crypto" {
     export interface CredentialDetails {
         pfx: string;
         key: string;
@@ -1665,8 +1665,8 @@ declare module "crypto" {
     export function pseudoRandomBytes(size: number, callback: (err: Error, buf: Buffer) =>void ): void;
 }
 
-declare module "stream" {
-    import * as events from "events";
+declare module "node/stream" {
+    import * as events from "node/events";
 
     export interface Stream extends events.EventEmitter {
         pipe<T extends NodeJS.WritableStream>(destination: T, options?: { end?: boolean; }): T;
@@ -1754,7 +1754,7 @@ declare module "stream" {
     export class PassThrough extends Transform {}
 }
 
-declare module "util" {
+declare module "node/util" {
     export interface InspectOptions {
         showHidden?: boolean;
         depth?: number;
@@ -1778,7 +1778,7 @@ declare module "util" {
     export function debuglog(key:string): (msg:string,...param: any[])=>void;
 }
 
-declare module "assert" {
+declare module "node/assert" {
     function internal (value: any, message?: string): void;
     module internal {
         export class AssertionError implements Error {
@@ -1823,8 +1823,8 @@ declare module "assert" {
     export = internal;
 }
 
-declare module "tty" {
-    import * as net from "net";
+declare module "node/tty" {
+    import * as net from "node/net";
 
     export function isatty(fd: number): boolean;
     export interface ReadStream extends net.Socket {
@@ -1837,8 +1837,8 @@ declare module "tty" {
     }
 }
 
-declare module "domain" {
-    import * as events from "events";
+declare module "node/domain" {
+    import * as events from "node/events";
 
     export class Domain extends events.EventEmitter {
         run(fn: Function): void;
@@ -1858,7 +1858,7 @@ declare module "domain" {
     export function create(): Domain;
 }
 
-declare module "constants" {
+declare module "node/constants" {
     export var E2BIG: number;
     export var EACCES: number;
     export var EADDRINUSE: number;
