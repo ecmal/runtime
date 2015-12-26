@@ -4,8 +4,6 @@
   "version" : "0.0.1",
   "main"    : "./lib/index.js",
   "scripts" : {
-    "postinstall"   : "pwd ; tsc -p ./src; cp ./src/tsd/* ./lib",
-  	"build-test"    : "pwd ; tsc -p ./test/sample/src",
-    "run-test"      : "pwd ; tsc -p ./test/sample/src"
+    "postinstall"   : "pwd ; tsc -p ./src; cp ./src/tsd/* ./lib"
   }
 }
