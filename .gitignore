@@ -1,4 +1,4 @@
-out
+out/
 lib
 *.log
 *.pid
