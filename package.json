@@ -1,9 +1,5 @@
 {
   "name"    : "runtime",
   "vendor"  : "ecmal",
-  "version" : "0.0.1",
-  "main"    : "./lib/index.js",
-  "scripts" : {
-    "postinstall"   : "pwd ; tsc -p ./src; cp ./src/tsd/* ./lib"
-  }
+  "version" : "0.0.1"
 }

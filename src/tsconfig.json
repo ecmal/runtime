@@ -3,8 +3,8 @@
     "declaration":true,
     "module": "commonjs",
     "target": "es5",
-    "outFile":"../lib/index.js",
-    "inlineSourceMap":true,
+    "outFile":"../out/runtime/index.js",
+    "sourceMap":true,
     "inlineSources":true,
     "experimentalDecorators":true,
     "noLib":true
