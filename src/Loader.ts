@@ -1,4 +1,5 @@
 namespace Ecmal {
+    declare function require(path:string):any;
     export abstract class Loader {
         public main:string;
         public runtime:string;
@@ -97,22 +98,20 @@ namespace Ecmal {
             }
         }
     }
-    @platform(Environment.SERVER)
     export class ServerSideLoader extends Loader {
         constructor(){
             super();
         }
         static get FS(){
-            return Object.defineProperty(this, 'FS', {
+            return Object.defineProperty(this, 'FS', <PropertyDescriptor>{
                 value: require('fs')
             }).FS
         }
         static get VM(){
-            return Object.defineProperty(this, 'VM', {
-                value: require('vm')
+            return Object.defineProperty(this, 'VM', <PropertyDescriptor>{
+                value : require('vm')
             }).VM
         }
-
         get runtime():string {
             return __filename;
         }
@@ -159,10 +158,9 @@ namespace Ecmal {
             return Promise.resolve(module);
         }
     }
-    @platform(Environment.CLIENT)
     export class ClientSideLoader extends Loader {
-        get script():HTMLScriptElement{
-            return <HTMLScriptElement>document.querySelector('script[main]');
+        get script():any{
+            return document.querySelector('script[main]');
         }
         get runtime():string{
             return this.script.src;

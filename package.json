@@ -1,5 +1,12 @@
 {
-  "name"    : "runtime",
-  "vendor"  : "ecmal",
-  "version" : "0.0.1"
+  "name"          : "runtime",
+  "vendor"        : "ecmal",
+  "version"       : "0.0.1",
+  "format"        : "None",
+  "bundle"        : true,
+  "directories"   : {
+    "source"      : "src",
+    "output"      : "out",
+    "vendor"      : "out"
+  }
 }
