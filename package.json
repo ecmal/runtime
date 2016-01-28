@@ -1,0 +1,80 @@
+{
+  "name": "runtime",
+  "vendor": "ecmal",
+  "version": "0.0.1",
+  "registry": "github",
+  "format": "None",
+  "bundle": true,
+  "author": {
+    "name": "Sergey Mamyan",
+    "email": "sergey.mamyan@gmail.com"
+  },
+  "commit": "d559b0f7fb8fd44dfac9edfc729269a73a372d5b",
+  "repository": "https://github.com/ecmal/runtime.git",
+  "modules": {
+    "Loader": {
+      "name": "Loader",
+      "version": "3cee4a7654505bd24f753465185d389f",
+      "files": {
+        ".ts": {
+          "size": 7207,
+          "hash": "3cee4a7654505bd24f753465185d389f",
+          "sha": "e55fed5efd0394f60f32d43be7d64bbaeabb530e"
+        }
+      }
+    },
+    "Module": {
+      "name": "Module",
+      "version": "fa66ed8f90d0cdaafcedaf0f4c4935eb",
+      "files": {
+        ".ts": {
+          "size": 531,
+          "hash": "fa66ed8f90d0cdaafcedaf0f4c4935eb",
+          "sha": "c18823de2171b14adc68cdfdefa84a7c791e896d"
+        }
+      }
+    },
+    "Path": {
+      "name": "Path",
+      "version": "d472bbd3fc89c209b09a45ef890c08c1",
+      "files": {
+        ".ts": {
+          "size": 1679,
+          "hash": "d472bbd3fc89c209b09a45ef890c08c1",
+          "sha": "3c7727ccc87ae816b6db44997165ec8a2369c078"
+        }
+      }
+    },
+    "System": {
+      "name": "System",
+      "version": "b5929ee3567bc560a9bea65e0ac8b17c",
+      "files": {
+        ".ts": {
+          "size": 1683,
+          "hash": "b5929ee3567bc560a9bea65e0ac8b17c",
+          "sha": "37a64e8210bd9589f15c13f5378a5f58c23cd9c4"
+        }
+      }
+    },
+    "package": {
+      "name": "package",
+      "version": "4aaa2a554690e34a708635bfb3c3bbf9",
+      "size": 14231,
+      "hash": "eca1f2d9d8ea6f5accaad1aa0b7ee4e8",
+      "files": {
+        ".js.map": {
+          "size": 26894,
+          "hash": "552507ffbea1cbfbe575be4917c563e8"
+        },
+        ".js": {
+          "size": 14231,
+          "hash": "eca1f2d9d8ea6f5accaad1aa0b7ee4e8"
+        },
+        ".d.ts": {
+          "size": 2191,
+          "hash": "4aaa2a554690e34a708635bfb3c3bbf9"
+        }
+      }
+    }
+  }
+}
