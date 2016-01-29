@@ -1,4 +1,12 @@
+
+
 namespace Ecmal {
+    declare var __filename:string;
+    declare var document:any;
+    declare var global:any;
+    declare var process:any;
+    declare var XMLHttpRequest:any;
+    declare var Event:any;
     declare function require(path:string):any;
     export abstract class Loader {
         public main:string;
@@ -171,7 +179,7 @@ namespace Ecmal {
         read(module:Module):Promise<Module>{
             return new Promise((accept, reject)=> {
                 var oReq = new XMLHttpRequest();
-                oReq.addEventListener('load', (e:Event)=>{
+                oReq.addEventListener('load', (e:any)=>{
                     module.source = oReq.responseText;
                     accept(module);
                 });

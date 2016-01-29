@@ -1,4 +1,8 @@
 namespace Ecmal {
+    declare var window:any;
+    declare var global:any;
+    declare var process:any;
+    declare function require(path:string):any;
     export class Runtime {
         static get environment(){
             if(typeof window!='undefined'){
@@ -45,11 +49,11 @@ namespace Ecmal {
             }).catch(e=>console.log(e.stack));
         }*/
         if(typeof global!='undefined'){
-            Object.defineProperty(global,'System',{
-                value : system
+            Object.defineProperty(global,'System', <PropertyDescriptor>{
+                value: system
             });
-            Object.defineProperty(global,'require',{
-                value : require
+            Object.defineProperty(global,'require', <PropertyDescriptor>{
+                value: require
             })
         }
         return system;
