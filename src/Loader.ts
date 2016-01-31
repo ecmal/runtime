@@ -14,10 +14,12 @@ namespace Ecmal {
         public current:Module;
         public modules:Modules;
         public options:any;
+        public cache:any;
 
         constructor(){
             this.options = {};
             this.modules = {};
+            this.cache = {};
         }
         get base():string{
             if(!this.options.base){
@@ -30,7 +32,11 @@ namespace Ecmal {
         }
         abstract eval(url):Promise<string>;
         abstract read(url):Promise<string>;
-
+        bundle(contents:any){
+            for(var i in contents){
+                this.cache[i.toLowerCase()] = contents[i];
+            }
+        }
         get(url){
             var id = url.replace(this.base+'/','').replace(/^(.*)\.js$/g,'$1').toLowerCase();
             var module:Module =this.modules[id];
@@ -137,16 +143,21 @@ namespace Ecmal {
             }
         }
         read(module:Module):Promise<Module> {
-            return new Promise((accept, reject)=> {
-                ServerSideLoader.FS.readFile(module.url, 'utf8', function (err, data) {
-                    if (err){
-                        reject(err)
-                    }else{
-                        module.source = data;
-                        accept(module)
-                    }
+            if(this.cache[module.id]){
+                module.source = this.cache[module.id];
+                return Promise.resolve(module);
+            } else {
+                return new Promise((accept, reject)=> {
+                    ServerSideLoader.FS.readFile(module.url, 'utf8', function (err, data) {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            module.source = data;
+                            accept(module)
+                        }
+                    });
                 });
-            });
+            }
         }
         eval(module:Module):Promise<Module> {
             this.current = module;
@@ -177,18 +188,23 @@ namespace Ecmal {
             return this.script.getAttribute('main');
         }
         read(module:Module):Promise<Module>{
-            return new Promise((accept, reject)=> {
-                var oReq = new XMLHttpRequest();
-                oReq.addEventListener('load', (e:any)=>{
-                    module.source = oReq.responseText;
-                    accept(module);
-                });
-                oReq.addEventListener("error", e=>{
-                    reject(e)
-                });
-                oReq.open("get", module.url, true);
-                oReq.send();
-            })
+            if(this.cache[module.id]){
+                module.source = this.cache[module.id];
+                return Promise.resolve(module);
+            } else {
+                return new Promise((accept, reject)=> {
+                    var oReq = new XMLHttpRequest();
+                    oReq.addEventListener('load', (e:any)=> {
+                        module.source = oReq.responseText;
+                        accept(module);
+                    });
+                    oReq.addEventListener("error", e=> {
+                        reject(e)
+                    });
+                    oReq.open("get", module.url, true);
+                    oReq.send();
+                })
+            }
         }
         eval(module:Module):Promise<Module> {
             this.current = module;

@@ -2,11 +2,15 @@
   "name"          : "runtime",
   "vendor"        : "ecmal",
   "version"       : "0.0.1",
+  "registry"      : "github",
   "format"        : "None",
   "bundle"        : true,
   "directories"   : {
     "source"      : "src",
     "output"      : "out",
     "vendor"      : "out"
+  },
+  "libraries"     : {
+    "core"        : "0.0.1"
   }
 }

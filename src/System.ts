@@ -40,6 +40,9 @@ namespace Ecmal {
         import(name){
             return this.loader.import(name)
         }
+        bundle(content){
+            this.loader.bundle(content);
+        }
     }
     export function run():System {
         var system = new Ecmal.System();
