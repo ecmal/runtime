@@ -43,6 +43,13 @@ namespace Ecmal {
         bundle(content){
             this.loader.bundle(content);
         }
+        get modules(){
+            var modules = {};
+            Object.keys(this.loader.modules).forEach(k=>{
+                modules[k] = this.loader.modules[k].exports;
+            });
+            return modules;
+        }
     }
     export function run():System {
         var system = new Ecmal.System();
@@ -57,7 +64,7 @@ namespace Ecmal {
             });
             Object.defineProperty(global,'require', <PropertyDescriptor>{
                 value: require
-            })
+            });
         }
         return system;
     }
