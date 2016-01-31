@@ -1,5 +1,3 @@
-
-
 namespace Ecmal {
     declare var __filename:string;
     declare var document:any;
