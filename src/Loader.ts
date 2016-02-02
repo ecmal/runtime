@@ -161,6 +161,7 @@ namespace Ecmal {
             this.current = module;
             var context = {
                 System      : global['System'],
+                Reflect     : global['Reflect'],
                 Buffer      : global['Buffer'],
                 require     : global['require'],
                 process     : global['process'],

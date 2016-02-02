@@ -1,3 +1,48 @@
+namespace Reflect {
+    const METADATA:symbol = Symbol('metadata');
+    /*export function decorate(decorators, target, key, desc){
+        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+        for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
+    }*/
+    export function metadata(name,value){
+        return (target,key,desc)=>{
+            //console.info(target,key,desc,name,value);
+            var metadata = target[METADATA];
+            if(!metadata){
+                metadata = target[METADATA] = {};
+            }
+            if(key){
+                var field = metadata[Symbol.for(key)];
+                if(!field){
+                    field = metadata[Symbol.for(key)] = {};
+                }
+                metadata = field;
+            }
+            metadata[name] = value;
+        }
+    }
+    export function getDesignType(target,key):any{
+        return getMetadata(target,key,'design:type')||Object;
+    }
+    export function getReturnType(target,key):any{
+        return getMetadata(target,key,'design:returntype')||Object;
+    }
+    export function getParamTypes(target,key):any[]{
+        return getMetadata(target,key,'design:paramtypes')||[];
+    }
+    export function getMetadata(target,key,name){
+        var type,metadata = target[METADATA];
+        if(metadata){
+            var field = metadata[Symbol.for(key)];
+            if(field){
+                type = field[name];
+            }
+        }
+        return type;
+    }
+}
+
 namespace Ecmal {
     declare var window:any;
     declare var global:any;
@@ -61,6 +106,9 @@ namespace Ecmal {
         if(typeof global!='undefined'){
             Object.defineProperty(global,'System', <PropertyDescriptor>{
                 value: system
+            });
+            Object.defineProperty(global,'Reflect', <PropertyDescriptor>{
+                value: Reflect
             });
             Object.defineProperty(global,'require', <PropertyDescriptor>{
                 value: require
