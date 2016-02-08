@@ -65,15 +65,19 @@ namespace Ecmal {
                     .then(()=>this.eval(module))
                     .then(()=>{
                         var dir = Path.dirname(module.url);
-                        var dependencies:Promise<Module>[] = module.dependencies.map((d):Promise<Module>=>{
-                            var path = d+'.js';
-                            if(path[0]=='.'){
-                                path = Path.resolve(dir,path)
-                            }else{
-                                path = Path.resolve(this.base,path);
-                            }
-                            return this.fetch(this.get(path));
-                        });
+                        var dependencies:Promise<Module>[]=[]
+                        if(module.dependencies){
+                             dependencies= module.dependencies.map((d):Promise<Module>=>{
+                                var path = d+'.js';
+                                if(path[0]=='.'){
+                                    path = Path.resolve(dir,path)
+                                }else{
+                                    path = Path.resolve(this.base,path);
+                                }
+                                return this.fetch(this.get(path));
+                            });
+                        }
+
                         return Promise.all(dependencies).then((modules:Module[]):Module=>{
                             for(var d=0;d<modules.length;d++){
                                 module.dependencies[d] = modules[d];
