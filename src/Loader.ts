@@ -56,7 +56,7 @@ namespace Ecmal {
             if(mod.exports){
                 return Promise.resolve(mod.exports)
             }else{
-                return this.fetch(mod).then((m:Module)=>this.define(m)).then((m:Module)=>m.exports);
+                return this.fetch(mod).then((m:Module)=>this.define(m));
             }
         }
         fetch(module:Module):Promise<Module> {
@@ -92,11 +92,11 @@ namespace Ecmal {
             return promise;
         }
         define(module:Module){
-            if(module.defined){
+            if(module.exports){
                 return Promise.resolve(module.exports);
             }else{
                 module.exports = {};
-                var definer:any = new module.executable((name,val)=>{
+                var definer:any = module.executable.bind(module.exports)((name,val)=>{
                     module.exports[name] = val;
                 });
                 if(module.dependencies.length){
@@ -105,8 +105,6 @@ namespace Ecmal {
                         for(var i=0;i<exps.length;i++){
                             definer.setters[i](exps[i])
                         }
-
-
                         if(!module.defined) {
                             //console.info("EXEC", module.url);
                             Reflect.setCurrentModule(module);
@@ -114,11 +112,9 @@ namespace Ecmal {
                             Reflect.setCurrentModule(null);
                             module.defined = true;
                         }
-
                         return module.exports;
                     })
                 }else{
-
                     if(!module.defined) {
                         //console.info("EXEC",module.url);
                         Reflect.setCurrentModule(module);

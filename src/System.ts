@@ -1,66 +1,4 @@
-namespace Reflect {
-    const METADATA:symbol = Symbol('metadata');
 
-    var module:any;
-
-    export function decorate(decorators, target, key, desc) {
-        decorators.push(Reflect.metadata('design:module', {
-            id   : module.id,
-            url  : module.url,
-            deps : module.dependencies && module.dependencies.length
-                ? module.dependencies.map(m=>m.id)
-                : []
-        }));
-        var c = key?(desc?4:3):2, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-        for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    }
-
-    export function setCurrentModule(current){
-        module = current;
-    }
-
-    export function metadata(name,value){
-        return (target,key,desc)=>{
-            //console.info(target,key,desc,name,value);
-            var metadata = target[METADATA];
-            if(!metadata){
-                metadata = target[METADATA] = {};
-            }
-            if(key){
-                var field = metadata[Symbol.for(key)];
-                if(!field){
-                    field = metadata[Symbol.for(key)] = {};
-                }
-                metadata = field;
-            }
-            metadata[name] = value;
-        }
-    }
-    export function getDesignType(target,key):any{
-        return getMetadata(target,key,'design:type')||Object;
-    }
-    export function getReturnType(target,key):any{
-        return getMetadata(target,key,'design:returntype')||Object;
-    }
-    export function getParamTypes(target,key):any[]{
-        return getMetadata(target,key,'design:paramtypes')||[];
-    }
-    export function getMetadata(target,key,name){
-        var type,metadata = target[METADATA];
-        if(metadata){
-            if(key){
-                var field = metadata[Symbol.for(key)];
-                if(field){
-                    type = field[name];
-                }
-            }else{
-                type = metadata[name];
-            }
-        }
-        return type;
-    }
-}
 
 namespace Ecmal {
     declare var window:any;
@@ -102,7 +40,9 @@ namespace Ecmal {
             }
         }
         import(name){
-            return this.loader.import(name)
+            return this.loader.import(name).then(m=>{
+                return m;
+            })
         }
         bundle(content){
             this.loader.bundle(content);
