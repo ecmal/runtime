@@ -1,10 +1,25 @@
 namespace Reflect {
     const METADATA:symbol = Symbol('metadata');
-    /*export function decorate(decorators, target, key, desc){
-        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+
+    var module:any;
+
+    export function decorate(decorators, target, key, desc) {
+        decorators.push(Reflect.metadata('design:module', {
+            id   : module.id,
+            url  : module.url,
+            deps : module.dependencies && module.dependencies.length
+                ? module.dependencies.map(m=>m.id)
+                : []
+        }));
+        var c = key?(desc?4:3):2, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
         for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
         return c > 3 && r && Object.defineProperty(target, key, r), r;
-    }*/
+    }
+
+    export function setCurrentModule(current){
+        module = current;
+    }
+
     export function metadata(name,value){
         return (target,key,desc)=>{
             //console.info(target,key,desc,name,value);
@@ -34,9 +49,13 @@ namespace Reflect {
     export function getMetadata(target,key,name){
         var type,metadata = target[METADATA];
         if(metadata){
-            var field = metadata[Symbol.for(key)];
-            if(field){
-                type = field[name];
+            if(key){
+                var field = metadata[Symbol.for(key)];
+                if(field){
+                    type = field[name];
+                }
+            }else{
+                type = metadata[name];
             }
         }
         return type;

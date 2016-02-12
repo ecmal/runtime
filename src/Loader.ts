@@ -1,4 +1,5 @@
 namespace Ecmal {
+
     declare var __filename:string;
     declare var document:any;
     declare var global:any;
@@ -6,6 +7,7 @@ namespace Ecmal {
     declare var XMLHttpRequest:any;
     declare var Event:any;
     declare function require(path:string):any;
+
     export abstract class Loader {
         public main:string;
         public runtime:string;
@@ -91,25 +93,40 @@ namespace Ecmal {
         }
         define(module:Module){
             if(module.defined){
-                return Promise.resolve(module);
+                return Promise.resolve(module.exports);
             }else{
-                module.defined = true;
                 module.exports = {};
                 var definer:any = new module.executable((name,val)=>{
                     module.exports[name] = val;
                 });
                 if(module.dependencies.length){
-                    var promises:Promise<any>[] = module.dependencies.map((m):any=>this.define(m).then(m=>m.exports));
+                    var promises:Promise<any>[] = module.dependencies.map((m):any=>this.define(m));
                     return Promise.all(promises).then((exps:any)=>{
                         for(var i=0;i<exps.length;i++){
                             definer.setters[i](exps[i])
                         }
-                        definer.execute();
-                        return module;
+
+
+                        if(!module.defined) {
+                            //console.info("EXEC", module.url);
+                            Reflect.setCurrentModule(module);
+                            definer.execute();
+                            Reflect.setCurrentModule(null);
+                            module.defined = true;
+                        }
+
+                        return module.exports;
                     })
                 }else{
-                    definer.execute();
-                    return Promise.resolve(module)
+
+                    if(!module.defined) {
+                        //console.info("EXEC",module.url);
+                        Reflect.setCurrentModule(module);
+                        definer.execute();
+                        module.defined = true;
+                        Reflect.setCurrentModule(null);
+                    }
+                    return Promise.resolve(module.exports)
                 }
             }
         }
