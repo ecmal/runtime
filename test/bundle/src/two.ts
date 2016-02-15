@@ -1,5 +1,4 @@
 import {Main} from './main';
-import {Meta} from "../decor/decors";
 
 export class Two {
     constructor(param?:String){
