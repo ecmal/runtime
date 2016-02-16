@@ -198,16 +198,24 @@ namespace Runtime {
             }).vm;
         }
         protected get context():any{
-            return {
-                System      : global['System'],
-                Reflect     : global['Reflect'],
-                Buffer      : global['Buffer'],
-                require     : global['require'],
-                process     : global['process'],
-                console     : global['console'],
-                __filename  : this.current.url,
-                __dirname   : Path.dirname(this.current.url)
-            };
+
+            return Object.defineProperty(this,'context',<any>{
+                value:(()=>{
+                    //console.info(Object.keys(global));
+                    var context:any = {};
+                    for(var name in global){
+                        context[name] = global[name];
+                    }
+                    context.require = require;
+                    context.System  = System;
+                    context.Reflect = Reflect;
+                    context.Runtime = Runtime;
+                    context.__filename = this.current.url;
+                    context.__dirname = Path.dirname(this.current.url);
+                    return context;
+                })()
+            }).context;
+
         }
         protected get runtime():string {
             return __filename;
@@ -236,17 +244,32 @@ namespace Runtime {
             if(module.isLoaded){
                 return Promise.resolve(module);
             }else{
+
+                //console.info(module.project,module.path);
+
+
                 module.state = ModuleState.LOADING;
                 return new Promise((accept, reject)=> {
-                    NodeLoader.fs.readFile(module.url, 'utf8',(err, data)=>{
-                        if(err){
-                            module.source = String(err.stack||err);
-                            reject(err)
-                        } else {
-                            module.source = data;
-                            accept(module)
-                        }
-                    });
+                    if(module.project=='node'){
+                        module.source = `System.register([], function(exports) {
+                            var exported = require('${module.path}');
+                            for(var name in exported){
+                                exports(name,exported[name])
+                            }
+                            exports('default',exported)
+                        })`;
+                        accept(module)
+                    }else {
+                        NodeLoader.fs.readFile(module.url, 'utf8', (err, data)=> {
+                            if (err) {
+                                module.source = String(err.stack || err);
+                                reject(err)
+                            } else {
+                                module.source = data;
+                                accept(module)
+                            }
+                        });
+                    }
                 });
             }
         }

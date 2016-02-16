@@ -1,0 +1,17 @@
+{
+  "name"          : "nodejs",
+  "vendor"        : "ecmal",
+  "version"       : "0.0.1",
+  "registry"      : "github",
+  "main"          : "main",
+  "directories"   : {
+    "source"      : "src",
+    "output"      : "out",
+    "vendor"      : "out"
+  },
+  "libraries"     : {
+    "core"        : "0.0.1",
+    "node"        : "0.0.1",
+    "runtime"     : "0.0.2"
+  }
+}

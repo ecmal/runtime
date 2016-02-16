@@ -224,6 +224,12 @@ namespace Reflect {
         public classes:{[name:string]:Class};
         public executor:Function;
 
+        public get project():string{
+            return this.name.split('/')[0];
+        }
+        public get path():string{
+            return this.name.substr(this.project.length+1);
+        }
         public get isDefined():boolean{
             return !!this.exports;
         }
