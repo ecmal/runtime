@@ -3,7 +3,7 @@
   "vendor"        : "ecmal",
   "version"       : "0.0.1",
   "registry"      : "github",
-  "main"          : "main",
+  "main"          : "index",
   "directories"   : {
     "source"      : "src",
     "output"      : "out",
