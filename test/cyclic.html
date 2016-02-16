@@ -10,7 +10,7 @@
 <script>
     System.import('cyclic/cyclic')
     .then(function(exports){
-        console.info(System.modules.toJSON())
+        console.info(System.modules)
     })
     .catch(function(error){
         console.error(error.stack||error)

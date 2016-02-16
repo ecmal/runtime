@@ -1,3 +1,8 @@
+///<reference path="./reflect.ts"/>
+///<reference path="./loader.ts"/>
+///<reference path="./helpers.ts"/>
+
+
 class System {
     constructor(){
         if(!Runtime.Loader.global.System){
@@ -18,10 +23,10 @@ class System {
             })()
         }).loader;
     }
-    static get modules(): Runtime.Modules {
-        return this.loader.modules;
+    static get modules(): Reflect.Modules {
+        return Reflect.MODULES;
     }
-    static module(uri:string):Promise<Runtime.Module>{
+    static module(uri:string):Promise<Reflect.Module>{
         return this.loader.module(uri);
     }
     static import(uri:string):Promise<any>{
@@ -34,6 +39,4 @@ class System {
         this.loader.bundle(content);
     }
 }
-
-
 new System();

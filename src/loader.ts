@@ -1,16 +1,21 @@
+///<reference path="./reflect.ts"/>
 namespace Runtime {
+
+    import Module = Reflect.Module;
+    import ModuleState = Reflect.ModuleState;
+
     declare var __filename: any;
     declare var __dirname: any;
     declare var require: any;
     declare var global: any;
-    declare var window: any;
     declare var process: any;
+    declare var window: any;
 
     export class Loader {
 
         constructor(){
-            this.load = this.load.bind(this)
-            this.define = this.define.bind(this)
+            this.load = this.load.bind(this);
+            this.define = this.define.bind(this);
             this.eval = this.eval.bind(this)
         }
         static get global(){
@@ -35,23 +40,19 @@ namespace Runtime {
                 })()
             }).platform;
         }
-        public get modules(): Modules {
-            return Object.defineProperty(this,'modules',<any>{
-                value : new Modules()
-            }).modules;
-        }
 
         public import(uri:string):Promise<any>{
-            return this.module(uri,true).then(m=>(
-                this.main?this.main:m, m.exports
+            return this.module(uri).then(m=>(
+                this.main=this.main?this.main:(m.main=true,m), m.exports
             ));
         }
-        public module(name:string,main=false):Promise<Module>{
-            var module = this.modules.get({
-                name  : name,
-                root  : this.root,
-                main  : main
-            });
+        public module(id:string):Promise<Module>{
+            var name    = Path.moduleId(this.root, id);
+            var url     = Path.moduleUrl(this.root, id);
+            var module  = Module.get(name);
+            if(!module){
+                module = new Module({name,url});
+            }
             return Promise.resolve(module)
                 .then(this.load)
                 .then(this.eval)
@@ -65,15 +66,18 @@ namespace Runtime {
             this.current.executor = executor;
         }
         public bundle(content){
-            for(var name in content){
-                this.modules.get({
-                    name   : this.root+'/'+name+'.js',
-                    root   : this.root,
+            for(var id in content){
+                var name    = Path.moduleId(this.root, id);
+                var url     = Path.moduleUrl(this.root, id);
+                new Module({
+                    name   : name,
+                    url    : url,
                     main   : false,
                     source : content[name]
-                })
+                });
             }
         }
+
         protected runtime:string;
         protected current:Module;
         protected main:Module;
@@ -105,89 +109,15 @@ namespace Runtime {
                     return Path.moduleId(this.root,path);
                 });
 
-                var definer:ModuleDefiner = module.define();
+                module.define();
                 if(module.dependencies.length){
-                    var requires:Promise<Module>[] = module.dependencies.map((r:string):Promise<Module>=>this.module(r));
-                    return Promise.all(requires).then(r=>{
-                        r.forEach((m,i)=>{
-                            if(m.dependants.indexOf(module.name)<0){
-                                m.dependants.push(module.name);
-                            }
-                            definer.inject(i,m.exports);
-                        });
-                        definer.execute();
-                        return Promise.resolve(module)
-                    });
+                    var requires:Promise<Module>[] = module.dependencies.map(
+                        (r:string,i:number):Promise<Module>=>this.module(r).then((m:Module)=>module.inject(m,i))
+                    );
+                    return Promise.all(requires).then(r=>Promise.resolve(module.execute()));
                 }else{
-                    definer.execute();
-                    return Promise.resolve(module);
+                    return Promise.resolve(module.execute());
                 }
-            }
-        }
-    }
-
-    export class NodeLoader extends Loader {
-        private static get fs():any{
-            return Object.defineProperty(this,'fs',<any>{
-                value:require('fs')
-            }).fs;
-        }
-        private static get vm():any{
-            return Object.defineProperty(this,'vm',<any>{
-                value:require('vm')
-            }).vm;
-        }
-        protected get context():any{
-            return {
-                System      : global['System'],
-                Reflect     : global['Reflect'],
-                Buffer      : global['Buffer'],
-                require     : global['require'],
-                process     : global['process'],
-                console     : global['console'],
-                __filename  : this.current.url,
-                __dirname   : Path.dirname(this.current.url)
-            };
-        }
-        protected get runtime():string {
-            return __filename;
-        }
-
-        protected eval(module:Module):Promise<Module>{
-            if(module.isEvaluated){
-                return Promise.resolve(module);
-            }else{
-                return new Promise((accept, reject)=> {
-                    module.state = ModuleState.EVALUATING;
-                    this.current = module;
-                    NodeLoader.vm.runInNewContext(module.source,this.context,{
-                        filename : module.url
-                    });
-                    if(this.current.isEvaluated){
-                        this.current = null;
-                        accept(module)
-                    }else{
-                        reject(new Error(`Evaluation failed in ${module.url}`))
-                    }
-                });
-            }
-        }
-        protected load(module:Module):Promise<Module>{
-            if(module.isLoaded){
-                return Promise.resolve(module);
-            }else{
-                module.state = ModuleState.LOADING;
-                return new Promise((accept, reject)=> {
-                    NodeLoader.fs.readFile(module.url, 'utf8',(err, data)=>{
-                        if(err){
-                            module.source = String(err.stack||err);
-                            reject(err)
-                        } else {
-                            module.source = data;
-                            accept(module)
-                        }
-                    });
-                });
             }
         }
     }
@@ -256,5 +186,69 @@ namespace Runtime {
             }
         }
     }
+    export class NodeLoader extends Loader {
+        private static get fs():any{
+            return Object.defineProperty(this,'fs',<any>{
+                value:require('fs')
+            }).fs;
+        }
+        private static get vm():any{
+            return Object.defineProperty(this,'vm',<any>{
+                value:require('vm')
+            }).vm;
+        }
+        protected get context():any{
+            return {
+                System      : global['System'],
+                Reflect     : global['Reflect'],
+                Buffer      : global['Buffer'],
+                require     : global['require'],
+                process     : global['process'],
+                console     : global['console'],
+                __filename  : this.current.url,
+                __dirname   : Path.dirname(this.current.url)
+            };
+        }
+        protected get runtime():string {
+            return __filename;
+        }
 
+        protected eval(module:Module):Promise<Module>{
+            if(module.isEvaluated){
+                return Promise.resolve(module);
+            }else{
+                return new Promise((accept, reject)=> {
+                    module.state = ModuleState.EVALUATING;
+                    this.current = module;
+                    NodeLoader.vm.runInNewContext(module.source,this.context,{
+                        filename : module.url
+                    });
+                    if(this.current.isEvaluated){
+                        this.current = null;
+                        accept(module)
+                    }else{
+                        reject(new Error(`Evaluation failed in ${module.url}`))
+                    }
+                });
+            }
+        }
+        protected load(module:Module):Promise<Module>{
+            if(module.isLoaded){
+                return Promise.resolve(module);
+            }else{
+                module.state = ModuleState.LOADING;
+                return new Promise((accept, reject)=> {
+                    NodeLoader.fs.readFile(module.url, 'utf8',(err, data)=>{
+                        if(err){
+                            module.source = String(err.stack||err);
+                            reject(err)
+                        } else {
+                            module.source = data;
+                            accept(module)
+                        }
+                    });
+                });
+            }
+        }
+    }
 }

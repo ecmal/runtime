@@ -26,4 +26,4 @@ export class Main extends Base {
     }
 }
 
-export default new Main('Test');
+//export default new Main('Test');
