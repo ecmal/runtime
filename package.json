@@ -1,0 +1,83 @@
+{
+  "name": "runtime",
+  "vendor": "ecmal",
+  "version": "0.0.2",
+  "registry": "github",
+  "format": "None",
+  "bundle": true,
+  "libraries": {
+    "core": "0.0.1"
+  },
+  "author": {
+    "name": "Sergey Mamyan",
+    "email": "sergey.mamyan@gmail.com"
+  },
+  "commit": "113f3f5c60bea4a38d626fae3299f21146971688",
+  "repository": "https://github.com/ecmal/runtime.git",
+  "modules": {
+    "helpers": {
+      "name": "helpers",
+      "version": "42ea9fec4cdbe45a439b46990ee9c683",
+      "files": {
+        ".ts": {
+          "size": 1905,
+          "hash": "42ea9fec4cdbe45a439b46990ee9c683",
+          "sha": "e603ae431a834846de58fb731a9ae6163d949af8"
+        }
+      }
+    },
+    "loader": {
+      "name": "loader",
+      "version": "21df61fae3c22999821f43252a40bb20",
+      "files": {
+        ".ts": {
+          "size": 9424,
+          "hash": "21df61fae3c22999821f43252a40bb20",
+          "sha": "5615f659967a3c52a7758d8eecefde2bbf388ee1"
+        }
+      }
+    },
+    "reflect": {
+      "name": "reflect",
+      "version": "bf95a311dcf8f1c2b760a8c174f8256a",
+      "files": {
+        ".ts": {
+          "size": 18280,
+          "hash": "bf95a311dcf8f1c2b760a8c174f8256a",
+          "sha": "83bc286598152b546b0cf8f39ff60c28b34b1a6f"
+        }
+      }
+    },
+    "system": {
+      "name": "system",
+      "version": "8048d48fea7a63fc9d3bf704f6267c1e",
+      "files": {
+        ".ts": {
+          "size": 1218,
+          "hash": "8048d48fea7a63fc9d3bf704f6267c1e",
+          "sha": "eea0b25549b8eda586a3991e7a4a3cdf0629a8a7"
+        }
+      }
+    },
+    "package": {
+      "name": "package",
+      "version": "43dd69b70dd5fb76f23a14fb4184de0d",
+      "size": 37044,
+      "hash": "bd1427a8981fd60561682ddb8d11abcd",
+      "files": {
+        ".js.map": {
+          "size": 72774,
+          "hash": "14b654f344dbfcdb3cdfb5f829b292f5"
+        },
+        ".js": {
+          "size": 37044,
+          "hash": "bd1427a8981fd60561682ddb8d11abcd"
+        },
+        ".d.ts": {
+          "size": 5479,
+          "hash": "43dd69b70dd5fb76f23a14fb4184de0d"
+        }
+      }
+    }
+  }
+}
