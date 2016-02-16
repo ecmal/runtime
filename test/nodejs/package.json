@@ -1,16 +1,17 @@
 {
-  "name"          : "runtime",
+  "name"          : "nodejs",
   "vendor"        : "ecmal",
-  "version"       : "0.0.2",
+  "version"       : "0.0.1",
   "registry"      : "github",
-  "format"        : "None",
-  "bundle"        : true,
+  "main"          : "index",
   "directories"   : {
     "source"      : "src",
     "output"      : "out",
     "vendor"      : "out"
   },
   "libraries"     : {
-    "core"        : "0.0.1"
+    "core"        : "0.0.1",
+    "node"        : "0.0.1",
+    "runtime"     : "0.0.2"
   }
 }

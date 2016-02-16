@@ -1,4 +1,4 @@
-namespace Ecmal {
+namespace Runtime {
     export class Path {
         static SEP = '/';
         static filename(path:String) {
@@ -49,8 +49,12 @@ namespace Ecmal {
             }
             return current;
         }
+        static moduleUrl(base,id){
+            return this.resolve(base,id+'.js');
+        }
+        static moduleId(base,url){
+           return url.replace(base+'/','')
+               .replace(/^(.*)\.js$/g,'$1')
+        }
     }
 }
-
-
-

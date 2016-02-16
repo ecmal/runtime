@@ -1,5 +1,8 @@
 import {One} from "./one";
 import {Two} from "./two";
+import * as FS from "node/fs";
+import * as CP from "node/child_process";
+
 export class Base extends Object {
     constructor(config){
         super();
@@ -23,7 +26,9 @@ export class Main extends Base {
 
     constructor(config){
         super(config)
+        console.info(__dirname);
+        console.info(__filename);
+        console.info(require('http-server'));
+        console.info(CP);
     }
 }
-
-//export default new Main('Test');

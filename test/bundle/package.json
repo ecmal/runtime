@@ -1,10 +1,9 @@
 {
-  "name"          : "runtime",
+  "name"          : "bundle",
   "vendor"        : "ecmal",
-  "version"       : "0.0.2",
+  "version"       : "0.0.1",
   "registry"      : "github",
-  "format"        : "None",
-  "bundle"        : true,
+  "main"          : "main",
   "directories"   : {
     "source"      : "src",
     "output"      : "out",

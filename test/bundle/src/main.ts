@@ -25,5 +25,3 @@ export class Main extends Base {
         super(config)
     }
 }
-
-//export default new Main('Test');
