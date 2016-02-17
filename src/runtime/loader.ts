@@ -175,7 +175,6 @@ namespace Runtime {
         }
         public execute(clean:boolean=true){
             if(this.definer && this.definer.execute){
-                console.info("EXEC",this.name);
                 this.definer.execute();
             }
             delete this.definer;
