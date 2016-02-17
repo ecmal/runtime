@@ -1,3 +1,4 @@
+///<reference path="./loader.ts"/>
 namespace Runtime {
     import ModuleState = Reflect.ModuleState;
 

@@ -4,8 +4,6 @@
 ///<reference path="./runtime/browser.ts"/>
 ///<reference path="./runtime/node.ts"/>
 
-
-
 class System {
     constructor(){
         if(!Runtime.Loader.global.System){
