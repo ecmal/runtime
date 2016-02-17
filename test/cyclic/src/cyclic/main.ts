@@ -1,5 +1,6 @@
 import {One} from "./one";
 import {Two} from "./two";
+
 export class Base extends Object {
     constructor(config){
         super();

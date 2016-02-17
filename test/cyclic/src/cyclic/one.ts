@@ -1,10 +1,10 @@
 import {Main} from './main';
-import {Three} from './three';
+import three from './three';
 
 export class One {
     constructor(){
         Main.from('One');
-        console.info('One',new Three());
+        console.info('One',three);
     }
     private value:number = 56;
     public get length():number{
