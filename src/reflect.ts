@@ -4,8 +4,6 @@
 ///<reference path="./reflect/class.ts"/>
 ///<reference path="./reflect/module.ts"/>
 namespace Reflect {
-
-
     export function metadata(metadataKey: any, metadataValue: any):any  {
         return (target:any,targetKey:any):void=>defineMetadata(metadataKey,metadataValue,target,targetKey);
     }

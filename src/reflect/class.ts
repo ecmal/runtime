@@ -31,6 +31,22 @@ namespace Reflect {
                     break;
             }
         }
+        members(filter?:(m:Member)=>boolean):Member[]{
+            var result:Member[] = [];
+            Object.keys(this.static).forEach(k=>{
+                var member:Member = this.static[k];
+                if(!filter || filter(member)){
+                    result.push(member);
+                }
+            });
+            Object.keys(this.instance).forEach(k=>{
+                var member:Member = this.instance[k];
+                if(!filter || filter(member)){
+                    result.push(member);
+                }
+            });
+            return result;
+        }
         add(member:Member){
             switch(member.scope){
                 case Scope.STATIC   : this.static[member.name] = member; break;

@@ -48,7 +48,7 @@ namespace Runtime {
                             let paramTypes:Function[] = v;
                             let closureStr = String((desc && desc.value) || target).match(/function\s*[a-z0-9$_,\s]*\(([a-z0-9$_,\s]*)\)/i);
                             if (closureStr) {
-                                closureStr = closureStr[1].trim().split(/\s+\,\s+/)
+                                closureStr = closureStr[1].trim().split(/\s*\,\s*/)
                             }
                             let paramNames= closureStr;
                             let params:Param[]=[];

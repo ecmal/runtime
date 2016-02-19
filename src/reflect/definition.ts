@@ -22,7 +22,11 @@ namespace Reflect {
                     return member;
                 }
             }else{
-                return cls;
+                if(typeof index=="number"){
+                    return cls.params[index];
+                }else{
+                    return cls;
+                }
             }
         }
         public name:string;
@@ -36,7 +40,7 @@ namespace Reflect {
             return this.metadata[Symbol.for(key)];
         }
         hasMetadata(key):boolean{
-            return !!this.getMetadata(key)
+            return this.getMetadataKeys().indexOf(key)>=0;
         }
         getMetadataKeys(){
             return Object.getOwnPropertySymbols(this.metadata).map(k=>Symbol.keyFor(k));
