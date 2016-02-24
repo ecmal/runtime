@@ -57,20 +57,27 @@ namespace Runtime {
             if(module.isLoaded){
                 return Promise.resolve(module);
             }else{
-                module.state = ModuleState.LOADING;
-                return new Promise((accept, reject)=> {
-                    var oReq = new window.XMLHttpRequest();
-                    oReq.addEventListener('load', (e:any)=> {
-                        module.source = oReq.responseText;
-                        accept(module);
-                    });
-                    oReq.addEventListener("error",(e:any)=> {
-                        module.source = String(e.stack||e);
-                        reject(e)
-                    });
-                    oReq.open("get", module.url, true);
-                    oReq.send();
-                })
+                var promise = module['loader'];
+                if(!promise){
+                    module.state = ModuleState.LOADING;
+                    promise = module['loader'] = new Promise((accept, reject)=> {
+                        var oReq = new window.XMLHttpRequest();
+                        oReq.addEventListener('load', (e:any)=> {
+                            module.source = oReq.responseText;
+                            delete module['loader'];
+                            accept(module);
+                        });
+                        oReq.addEventListener("error",(e:any)=> {
+                            module.source = String(e.stack||e);
+                            delete module['loader'];
+                            reject(e)
+                        });
+                        oReq.open("get", module.url, true);
+                        oReq.send();
+                    })
+                }
+
+                return promise;
             }
         }
     }

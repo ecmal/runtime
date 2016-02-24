@@ -67,33 +67,33 @@ namespace Runtime {
             if(module.isLoaded){
                 return Promise.resolve(module);
             }else{
-
-                //console.info(module.project,module.path);
-
-
-                module.state = ModuleState.LOADING;
-                return new Promise((accept, reject)=> {
-                    if(module.project=='node'){
-                        module.source = `System.register([], function(exports) {
-                            var exported = require('${module.path}');
-                            for(var name in exported){
-                                exports(name,exported[name])
-                            }
-                            exports('default',exported)
-                        })`;
-                        accept(module)
-                    }else {
-                        NodeLoader.fs.readFile(module.url, 'utf8', (err, data)=> {
-                            if (err) {
-                                module.source = String(err.stack || err);
-                                reject(err)
-                            } else {
-                                module.source = data;
-                                accept(module)
-                            }
-                        });
-                    }
-                });
+                var promise = module['loader'];
+                if(!promise) {
+                    module.state = ModuleState.LOADING;
+                    promise = module['loader'] = new Promise((accept, reject)=> {
+                        if (module.project == 'node') {
+                            module.source = `System.register([], function(exports) {
+                                var exported = require('${module.path}');
+                                for(var name in exported){
+                                    exports(name,exported[name])
+                                }
+                                exports('default',exported)
+                            })`;
+                            accept(module)
+                        } else {
+                            NodeLoader.fs.readFile(module.url, 'utf8', (err, data)=> {
+                                if (err) {
+                                    module.source = String(err.stack || err);
+                                    reject(err)
+                                } else {
+                                    module.source = data;
+                                    accept(module)
+                                }
+                            });
+                        }
+                    });
+                }
+                return promise;
             }
         }
     }
