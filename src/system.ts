@@ -1,7 +1,8 @@
-///<reference path="./reflect.ts"/>
-///<reference path="./loader.ts"/>
 ///<reference path="./helpers.ts"/>
-
+///<reference path="./reflect.ts"/>
+///<reference path="./runtime/loader.ts"/>
+///<reference path="./runtime/browser.ts"/>
+///<reference path="./runtime/node.ts"/>
 
 class System {
     constructor(){

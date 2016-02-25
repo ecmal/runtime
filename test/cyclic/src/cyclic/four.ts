@@ -1,3 +1,6 @@
 export class Four {
-    constructor(){}
+    constructor(){
+
+    }
 }
+export default new Four();
