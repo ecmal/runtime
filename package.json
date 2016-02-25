@@ -1,0 +1,160 @@
+{
+  "name": "runtime",
+  "vendor": "ecmal",
+  "version": "0.0.2",
+  "registry": "github",
+  "format": "None",
+  "bundle": true,
+  "libraries": {
+    "core": "0.0.1"
+  },
+  "author": {
+    "name": "Sergey Mamyan",
+    "email": "sergey.mamyan@gmail.com"
+  },
+  "commit": "5625aacca6c24e3720b0b26a2df653f4ca51160e",
+  "repository": "https://github.com/ecmal/runtime.git",
+  "modules": {
+    "helpers": {
+      "name": "helpers",
+      "version": "42ea9fec4cdbe45a439b46990ee9c683",
+      "files": {
+        ".ts": {
+          "size": 1905,
+          "hash": "42ea9fec4cdbe45a439b46990ee9c683",
+          "sha": "e603ae431a834846de58fb731a9ae6163d949af8"
+        }
+      }
+    },
+    "reflect": {
+      "name": "reflect",
+      "version": "ef611cd7a1f96a35aa41550673204545",
+      "files": {
+        ".ts": {
+          "size": 3081,
+          "hash": "ef611cd7a1f96a35aa41550673204545",
+          "sha": "4a6320c957022b0af0ce36e3685e84bd3e92bf96"
+        }
+      }
+    },
+    "reflect/class": {
+      "name": "reflect/class",
+      "version": "365e40f6d45d1bd0befe1861df8246cc",
+      "files": {
+        ".ts": {
+          "size": 3237,
+          "hash": "365e40f6d45d1bd0befe1861df8246cc",
+          "sha": "9d7f3720f40da566216482f4dd177c1979fd76c9"
+        }
+      }
+    },
+    "reflect/definition": {
+      "name": "reflect/definition",
+      "version": "e8ed6fdf57d85c3ee8347b860cec64c9",
+      "files": {
+        ".ts": {
+          "size": 1957,
+          "hash": "e8ed6fdf57d85c3ee8347b860cec64c9",
+          "sha": "9d02c05ab10d132b8bc149b55b1b869219b5b1c6"
+        }
+      }
+    },
+    "reflect/enums": {
+      "name": "reflect/enums",
+      "version": "1a9c08e200b68c5a08fa786c3df6572b",
+      "files": {
+        ".ts": {
+          "size": 232,
+          "hash": "1a9c08e200b68c5a08fa786c3df6572b",
+          "sha": "71360ba2d008fdcb2f1261788f8d75a2691987b3"
+        }
+      }
+    },
+    "reflect/member": {
+      "name": "reflect/member",
+      "version": "99411018ef2e646d1131f3839f749b8a",
+      "files": {
+        ".ts": {
+          "size": 2283,
+          "hash": "99411018ef2e646d1131f3839f749b8a",
+          "sha": "c6e258adb016f30887c3d5859ab365dc38fdd2f7"
+        }
+      }
+    },
+    "reflect/module": {
+      "name": "reflect/module",
+      "version": "7982bfc074d0bf6cfe6528d2cc829e41",
+      "files": {
+        ".ts": {
+          "size": 2739,
+          "hash": "7982bfc074d0bf6cfe6528d2cc829e41",
+          "sha": "c291993f6707ebcd7f0024f66a1e8ccc048d669e"
+        }
+      }
+    },
+    "runtime/browser": {
+      "name": "runtime/browser",
+      "version": "f2a5d7397ef165752dc1f721982118d5",
+      "files": {
+        ".ts": {
+          "size": 3248,
+          "hash": "f2a5d7397ef165752dc1f721982118d5",
+          "sha": "630cac5ccf5e1ad110856e23d7f25adf641e6d77"
+        }
+      }
+    },
+    "runtime/loader": {
+      "name": "runtime/loader",
+      "version": "520dbda0e4bd28c77f4a9529919bee5d",
+      "files": {
+        ".ts": {
+          "size": 11911,
+          "hash": "520dbda0e4bd28c77f4a9529919bee5d",
+          "sha": "7fc3a248ba6c3c51a3e361a87ff1488512f820a5"
+        }
+      }
+    },
+    "runtime/node": {
+      "name": "runtime/node",
+      "version": "9f63efe75160d561fbddf8272cc38fdf",
+      "files": {
+        ".ts": {
+          "size": 3783,
+          "hash": "9f63efe75160d561fbddf8272cc38fdf",
+          "sha": "b53d8405e38882f3f27f6a55d03ccd160ea18e40"
+        }
+      }
+    },
+    "system": {
+      "name": "system",
+      "version": "5be7fe42204ef843d548651acf622033",
+      "files": {
+        ".ts": {
+          "size": 1310,
+          "hash": "5be7fe42204ef843d548651acf622033",
+          "sha": "24696ab82e6bc6841a2f9a63071ad37cfcf6524a"
+        }
+      }
+    },
+    "package": {
+      "name": "package",
+      "version": "2a507908d2cf5106205a98b642c7f06e",
+      "size": 42743,
+      "hash": "e1b5e60a44f7398997ae89178f5c95f1",
+      "files": {
+        ".js.map": {
+          "size": 83189,
+          "hash": "860631ddffaf22167846d324f46a379b"
+        },
+        ".js": {
+          "size": 42743,
+          "hash": "e1b5e60a44f7398997ae89178f5c95f1"
+        },
+        ".d.ts": {
+          "size": 6573,
+          "hash": "2a507908d2cf5106205a98b642c7f06e"
+        }
+      }
+    }
+  }
+}
