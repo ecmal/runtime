@@ -8,7 +8,13 @@
 </head>
 <body>
 <script>
-    System.import('cyclic/cyclic')
+    System.on('load',function(module){
+       console.info("System.onLoad",module.exports,module.name);
+    });
+    System.on('module',function(module){
+        console.info("System.onModule",module.exports,module.name);
+    });
+    System.import('project/test')
     .then(function(exports){
         console.info(System.modules)
     })
