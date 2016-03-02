@@ -1,43 +1,34 @@
-///<reference path="./helpers.ts"/>
-///<reference path="./reflect.ts"/>
-///<reference path="./runtime/loader.ts"/>
-///<reference path="./runtime/browser.ts"/>
-///<reference path="./runtime/node.ts"/>
+///<reference path="package.ts"/>
 
-class System {
-    constructor(){
-        if(!Runtime.Loader.global.System){
-            Runtime.Loader.global.System = System;
+import {Module} from "./module"
+
+var system:System;
+
+export class System {
+    constructor(modules){
+        if(!system){
+            system = this;
+            Module.setup(modules);
+        }else{
+            throw new Error("System can't be instantiated")
         }
-        return System;
     }
-    static get platform():string{
-        return Runtime.Loader.platform;
+    register(requires,definer){
+        console.info(requires,definer);
     }
-    static get loader() : Runtime.Loader {
-        return Object.defineProperty(this,'loader',<any>{
-            value:(():Runtime.Loader=>{
-                switch(System.platform){
-                    case 'browser'  : return new Runtime.BrowserLoader();
-                    case 'node'     : return new Runtime.NodeLoader();
-                }
-            })()
-        }).loader;
-    }
-    static get modules(): Reflect.Modules {
-        return Reflect.MODULES;
-    }
-    static module(uri:string):Promise<Reflect.Module>{
-        return this.loader.module(uri);
-    }
-    static import(uri:string):Promise<any>{
-        return this.loader.import(uri);
-    }
-    static register(requires:string[],execute:Function):void{
-        this.loader.register(requires,execute);
-    }
-    static bundle(content){
-        this.loader.bundle(content);
+    import(){}
+}
+
+export class NodeSystem extends System {
+    constructor(modules){
+        super(modules)
     }
 }
-new System();
+
+export class BrowserSystem extends System {
+    constructor(modules){
+        super(modules)
+    }
+}
+
+export default system;

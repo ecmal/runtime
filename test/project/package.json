@@ -1,12 +1,11 @@
 {
-  "name"          : "cyclic",
+  "name"          : "project",
   "vendor"        : "ecmal",
-  "version"       : "0.0.1",
+  "version"       : "0.0.2",
   "registry"      : "github",
   "directories"   : {
     "source"      : "src",
-    "output"      : "out",
-    "vendor"      : "out"
+    "vendor"      : "../../out"
   },
   "libraries"     : {
     "core"        : "0.0.1"
