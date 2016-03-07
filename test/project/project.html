@@ -8,19 +8,16 @@
 </head>
 <body>
 <script>
-    /*System.on('load',function(module){
-       console.info("System.onLoad",module.exports,module.name);
-    });
-    System.on('module',function(module){
-        console.info("System.onModule",module.exports,module.name);
-    });
-    System.import('project/test')
+    /*System.on('init',function(){
+       console.info("System.init");
+    });*/
+    System.import('project/browser')
     .then(function(exports){
-        console.info(System.modules)
+        console.info("EXPORTS",exports)
     })
     .catch(function(error){
         console.error(error.stack||error)
-    })*/
+    })
 </script>
 </body>
 </html>

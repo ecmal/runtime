@@ -5,10 +5,17 @@ namespace System {
     declare var global:any;
     declare var process:any;
 
+
     const modules:any = Object.create(null);
     const helpers:any = {
-        __extends(d, b=Object) {
-            for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        __extends(d:any, b:any) {
+            d.$class = true;
+            if(!b){ return }
+            for (var p in b) {
+                if (b.hasOwnProperty(p)) {
+                    Object.defineProperty(d,p,Object.getOwnPropertyDescriptor(b,p));
+                }
+            }
             function __() { this.constructor = d; }
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         }
@@ -18,38 +25,40 @@ namespace System {
         var module = modules[id] || (modules[id] = Object.create(null));
         module.requires = requires;
         module.exports = {};
-        module.executor = executor.bind(helpers)((key,value)=>{
+        module.executor = executor((key,value)=>{
             module.exports[key]=value;
-        });
+        },helpers);
+        if(id=="runtime/system"){
+            bootstrap();
+        }
     };
 
     function execute(id){
         var module = modules[id];
-        var requires = module.requires;
-        requires.forEach((r,i)=>{
-            module.executor.setters[i](execute(r));
-        });
-        module.executor.execute();
-        delete module.executor;
-        return module.exports;
+        if(module.executor){
+            var executor = module.executor;
+            var requires = module.requires;
+            delete module.executor;
+            requires.forEach((r,i)=>{
+                executor.setters[i](execute(r));
+            });
+            executor.execute();
+            return module.exports;
+        }else{
+            return module.exports;
+        }
     }
 
     function bootstrap(){
+        delete System['register'];
         var Runtime = execute('runtime/system');
         Runtime.default = System;
-        if(typeof window!='undefined'){
-            Runtime = Runtime.BrowserSystem;
-        } else
-        if(typeof process=='object'){
-            Runtime = Runtime.NodeSystem;
-        }
-        Object.setPrototypeOf(System,Runtime.prototype);
+        Object.setPrototypeOf(System,Runtime.System.prototype);
         Object.defineProperty(System,'constructor',{
-           value : Runtime
+           value : Runtime.System
         });
         System.constructor.call(System,modules);
-
+        System['emit']('init');
     }
-
-    setTimeout(bootstrap)
+    //setTimeout(bootstrap)
 }

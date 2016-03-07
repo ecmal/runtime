@@ -1,9 +1,8 @@
-require('../out/runtime/package');
-System.import('cyclic/cyclic')
-    .then(function(r){
-        console.info(JSON.stringify(System.modules,null,2));
+require('../../out/runtime/package');
+System.import('project/node')
+    .then(function(exports){
+        console.info("EXPORTS",Object.keys(exports))
     })
-    .catch(function(e){
-        console.error(e.stack)
-    })
-;
+    .catch(function(error){
+        console.error(error.stack||error)
+    });
