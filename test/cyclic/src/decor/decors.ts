@@ -1,6 +1,11 @@
-import Definition = Runtime.Definition;
-import Method = Runtime.Method;
+import Definition = Reflect.Definition;
+import Method = Reflect.Method;
 
+export class Decor {
+    constructor(...args){
+
+    }
+}
 export function Meta(type):any{
     return (target,key,desc):any=>{
         var def = Definition.for(target,key,desc);

@@ -22,23 +22,44 @@ namespace Runtime {
         public module:Module;
         constructor(module){
             this.module = module;
-            this.__metadata = this.__metadata.bind(this);
-            this.__decorate = this.__decorate.bind(this);
-            this.__extends = this.__extends.bind(this);
-            this.__param = this.__param.bind(this);
+            this.defineClass = this.defineClass.bind(this);
+            this.extendClass = this.extendClass.bind(this);
+            this.initClass = this.initClass.bind(this);
+
+            this.exports = this.exports.bind(this);
+            this.decorate = this.decorate.bind(this);
+            this.metadata = this.metadata.bind(this);
+            this.param = this.param.bind(this);
+            this.define = this.define.bind(this);
         }
-        __decorate(decorators, target, key, desc) {
+        exports(key,value){
+            this.module.exports[key] = value;
+            //console.info("EXPORT",key,value);
+        }
+        defineClass(builder,overrider){
+            //console.info("Class",builder,overrider);
+            return builder;
+        }
+        initClass(builder,overrider){
+            //console.info("Class",builder,overrider);
+            return builder;
+        }
+        decorate(target,flags,key,decorators) {
+            //console.info(target,flags,key,decorators);
+        }
+        decorate__(decorators, target, key, desc) {
             var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
             for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
             if(c > 3 && r ){
                 Object.defineProperty(target, key, r)
             }
-            this.__define(target,key);
+            this.define(target,key);
             return r;
         }
-        __metadata(k, v) {
+        metadata(k, v) {}
+        metadata__(k, v) {
             return (target,key,desc)=>{
-                var def = this.__define(target,key);
+                var def = this.define(target,key);
                 switch(k){
                     case 'design:returntype'    :
                         (<Method>def).returnType = v;
@@ -66,14 +87,14 @@ namespace Runtime {
                 }
             }
         }
-        __param(paramIndex, decorator){
+        param(paramIndex, decorator){
             return (target, key)=>{
                 decorator(target, key, paramIndex);
             }
         }
-        __extends(d, b) {
-            var dd:Class = <Class>this.__define(d);
-            var bb:Class = <Class>this.__define(b);
+        extendClass(d, b) {
+            var dd:Class = <Class>this.define(d);
+            var bb:Class = <Class>this.define(b);
             dd.parent = bb;
             if(!bb.children){
                 bb.children = [dd];
@@ -84,7 +105,7 @@ namespace Runtime {
             function __() { this.constructor = d; }
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         }
-        __define(target, key?, desc?):Definition {
+        define(target, key?, desc?):Definition {
             var scope:Scope,closure:Function;
             switch(typeof target){
                 case "function" :
@@ -155,7 +176,7 @@ namespace Runtime {
                 });
             }
         }
-        public register(requires:string[],executor:Function){
+        public register(name:string,requires:string[],executor:Function){
             this.executor = executor;
             this.dependencies = requires.map(d=>{
                 var path = d;
@@ -236,8 +257,8 @@ namespace Runtime {
             promise = promise.then(this.execute);
             return promise.then(m=>(module.done()),e=>(module.done(e)));
         }
-        public register(requires:string[],executor:Function):void{
-            this.current.register(requires,executor)
+        public register(name:string,requires:string[],executor:Function):void{
+            this.current.register(name,requires,executor);
         }
         public bundle(content){
             for(var id in content){

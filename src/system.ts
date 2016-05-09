@@ -33,8 +33,8 @@ class System {
     static import(uri:string):Promise<any>{
         return this.loader.import(uri);
     }
-    static register(requires:string[],execute:Function):void{
-        this.loader.register(requires,execute);
+    static register(name:string,requires:string[],execute:Function):void{
+        this.loader.register(name,requires,execute);
     }
     static bundle(content){
         this.loader.bundle(content);

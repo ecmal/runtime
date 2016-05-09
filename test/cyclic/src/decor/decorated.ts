@@ -1,54 +1,55 @@
 import {Meta} from "./decors"
-@Meta(Runtime.Class)
+
+@Meta(Reflect.Class)
 export class Hello extends Object {
 
-    @Meta(Runtime.Field)
+    @Meta(Reflect.Field)
     static field : String;
 
-    @Meta(Runtime.Field)
+    @Meta(Reflect.Field)
     static fieldInitialized : String = "";
 
-    @Meta(Runtime.Field)
+    @Meta(Reflect.Field)
     static fieldFunction : (a:string)=>string;
 
-    @Meta(Runtime.Accessor)
+    @Meta(Reflect.Accessor)
     static get fieldAccessor():string{
         return "";
-    };
+    }
     static set fieldAccessor(v:string){
 
-    };
+    }
 
-    @Meta(Runtime.Method)
+    @Meta(Reflect.Method)
     static method(
-        @Meta(Runtime.Param) object:Object,
-        @Meta(Runtime.Param) array:Array<any>,
+        @Meta(Reflect.Param) object:Object,
+        @Meta(Reflect.Param) array:Array<any>,
         ...param:String[]
     ) : String {
         return ""
     }
 
-    @Meta(Runtime.Field)
+    @Meta(Reflect.Field)
     field : String;
 
-    @Meta(Runtime.Field)
+    @Meta(Reflect.Field)
     fieldInitialized : String = "";
 
-    @Meta(Runtime.Field)
+    @Meta(Reflect.Field)
     fieldFunction : (a:string)=>string;
 
-    @Meta(Runtime.Accessor)
+    @Meta(Reflect.Accessor)
     get fieldAccessor():string{
         return "";
-    };
+    }
     set fieldAccessor(v:string){
 
-    };
+    }
 
-    @Meta(Runtime.Method)
+    @Meta(Reflect.Method)
     method(
-        @Meta(Runtime.Param) object:Object,
-        @Meta(Runtime.Param) array:Array<any>,
+        @Meta(Reflect.Param) object:Object,
+        @Meta(Reflect.Param) array:Array<any>,
         ...param:String[]
     ) : String {
         return ""

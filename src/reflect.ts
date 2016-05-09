@@ -80,4 +80,7 @@ namespace Reflect {
             return false
         }
     }
+    export function createElement(){
+        return Array.prototype.slice.apply(arguments)
+    }
 }
