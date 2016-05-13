@@ -1,24 +1,22 @@
 import {One} from "./one";
 import {Two} from "./two";
 
-export class Base extends Object {
-    constructor(config){
-        super();
-        console.info("Base",this.constructor.name,config);
+export class Base {
+    public name:string;
+    public one:One;
+    public two:Two;
+    public toString(){
+        return `Base:${this.name}(${this.one},${this.two})`
+    }
+    constructor(name){
+        this.name = name;
     }
 }
 export class Main extends Base {
     static great:String = 'Main.from';
-    static get greatGetter():String{
-        return this.great
-    };
-    static set greatSetter(v:String){
-        this.great = v;
-    };
-    static from(target:any):void{
-        console.info(this.great,target);
+    static from(target:any):string{
+        return `Main(${this.great}) + ${target.toString()}`
     }
-    public other:()=>any;
     public one:One = new One();
     public two:Two = new Two();
 
@@ -27,4 +25,4 @@ export class Main extends Base {
     }
 }
 
-//export default new Main('Test');
+export default new Main('Test');

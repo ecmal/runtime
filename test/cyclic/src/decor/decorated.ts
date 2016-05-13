@@ -1,57 +1,40 @@
-import {Meta} from "./decors"
+import Decor from "./decors"
 
-@Meta(Reflect.Class)
-export class Hello extends Object {
 
-    @Meta(Reflect.Field)
-    static field : String;
-
-    @Meta(Reflect.Field)
-    static fieldInitialized : String = "";
-
-    @Meta(Reflect.Field)
-    static fieldFunction : (a:string)=>string;
-
-    @Meta(Reflect.Accessor)
-    static get fieldAccessor():string{
-        return "";
+@Decor @Decor('value')
+export class Hello{
+    constructor(
+        @Decor @Decor('value') arg:string
+    ){
+        
     }
-    static set fieldAccessor(v:string){
+    @Decor
+    @Decor('value')
+    static property:string = 'value';
 
-    }
+    @Decor
+    @Decor('value')
+    public static get accessor():string{return ''}
+    public static set accessor(v:string){}
 
-    @Meta(Reflect.Method)
-    static method(
-        @Meta(Reflect.Param) object:Object,
-        @Meta(Reflect.Param) array:Array<any>,
-        ...param:String[]
-    ) : String {
-        return ""
+    @Decor
+    @Decor('value')
+    static method():string{
+        return null;
     }
 
-    @Meta(Reflect.Field)
-    field : String;
+    @Decor @Decor('value')
+    private property:string = 'value';
 
-    @Meta(Reflect.Field)
-    fieldInitialized : String = "";
+    @Decor
+    @Decor('value')
+    public get accessor():string{return ''}
+    public set accessor(v:string){}
 
-    @Meta(Reflect.Field)
-    fieldFunction : (a:string)=>string;
-
-    @Meta(Reflect.Accessor)
-    get fieldAccessor():string{
-        return "";
-    }
-    set fieldAccessor(v:string){
-
-    }
-
-    @Meta(Reflect.Method)
-    method(
-        @Meta(Reflect.Param) object:Object,
-        @Meta(Reflect.Param) array:Array<any>,
-        ...param:String[]
-    ) : String {
-        return ""
+    @Decor @Decor('value')
+    public method(
+        @Decor @Decor('value') arg:string
+    ):string{
+        return null;
     }
 }

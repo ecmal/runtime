@@ -1,8 +1,8 @@
 import Four from "./four";
 
 export class Three {
-    constructor(){
-        console.info(Four)
+    public toString(){
+        return `Three + ${Four.toString()}`;
     }
 }
 
