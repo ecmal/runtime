@@ -20,17 +20,26 @@ var system:System = <System> Object.create({
         })
     },
     register(name,requires,definer){
-        function executeModule(name,system){
+        function executeModule(name,system,extend){
+
             var m = system.modules[name];
             if(m.definer){
                 var definer = m.definer;
                 delete m.definer;
                 if(m.requires && m.requires.length){
                     m.requires.forEach(r=>{
-                        executeModule(r,system)
+                        executeModule(r,system,extend)
                     });
                 }
+                m.init = function (target,parent){
+                    extend(target,parent);
+                    if(target.__initializer){
+                        target.__initializer(parent);
+                        delete target.__initializer;
+                    }
+                };
                 definer.execute();
+                delete m.init;
             }
         }
         function createModule(system,m){
@@ -65,6 +74,7 @@ var system:System = <System> Object.create({
                 }
                 var Module =  modules['runtime/module'].exports.Module;
                 var System =  modules['runtime/system'].exports.System;
+
                 Object.setPrototypeOf(system,System.prototype);
                 for(let n in modules){
                     var m = modules[n];
@@ -73,9 +83,9 @@ var system:System = <System> Object.create({
                     });
                     Object.setPrototypeOf(m,Module.prototype);
                 }
-                executeModule('runtime/system',system);
+                executeModule('runtime/system',system,Module.extend);
                 for(let n in modules){
-                    executeModule(n,system);
+                    executeModule(n,system,Module.extend);
                 }
                 System.call(system);
             })

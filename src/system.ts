@@ -97,6 +97,9 @@ export class System extends Emitter implements System {
 
         for(var n in this.modules){
             var m = this.modules[n];
+            for(var i in m.members){
+                m.init(m.members[i],void 0);
+            }
             Object.defineProperty(m,'url',{
                 enumerable      : true,
                 configurable    : false,

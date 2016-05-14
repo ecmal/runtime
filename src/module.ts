@@ -1,4 +1,8 @@
-import {Class} from "./reflect/class";
+import {Class, Modifier} from "./reflect/class";
+import {Decorator} from "./decorators";
+import {Metadata} from "./decorators";
+import {Parameter} from "./decorators";
+import {Type} from "./decorators";
 
 const reflection = Symbol('reflection');
 
@@ -59,7 +63,7 @@ export class Module implements Module {
         this.definer = definer(system,this);
     }
     public define(type,value){
-        value[reflection]=type;
+        value.__reflection = type;
         switch(type){
             case 'class'    :
                 this.members[value.name] = value;
@@ -81,24 +85,12 @@ export class Module implements Module {
             this.exports[key] = value;
         }
     }
-
     public init(target,parent){
         if(target.__reflection){
             var type = target.__reflection;
             delete target.__reflection;
             if(type=='class'){
-                console.info('init class',target.name,parent?parent.name:'');
-                Module.extend(target,parent);
-                if(target.__decorator){
-                    //console.info(" decorator",target.__decorator);
-                    //target.__decorator(parent);
-                    //delete target.__decorator;
-                }
-                if(target.__initializer){
-                    //console.info(" initializer",target.__initializer);
-                    target.__initializer(parent);
-                    delete target.__initializer;
-                }
+                this.addClass(target,parent);
             }
         }
     }
@@ -125,27 +117,67 @@ export class Module implements Module {
                     }
                 });
             }
+            console['group']("Module:execute", this.name);
             definer.execute();
+            console['groupEnd']();
         }
     }
-    
-    /**
-     * @internal
-     */
-    public initialize(reflection:symbol){
-        console.info('initialize',this,reflection);
-        function initClass(module:Module,name:string,ctor:Function){
-            return Object.defineProperty(ctor,'class',{
-                value:ctor[reflection] = new Class(module,name,ctor)
-            }).class;
+
+    private addClass(target,parent){
+        console.info("Class:",target.name,parent?parent.name:'');
+        var Child,Parent;
+        Object.defineProperty(this.members,target.name,{
+            value : Object.defineProperty(target,'class',{
+                value : Child = new Class(module,target.name,target)
+            }).class
+        });
+        Module.extend(target,parent);
+        if(target.__decorator){
+            var __decorator = target.__decorator;
+            delete target.__decorator;
+            __decorator((t,f,m,d)=>{
+                var isClass = typeof m!='string';
+                var Target=t,decorators=d,member=m,flags=f;
+
+                if(isClass){
+                    decorators = f;
+                }else{
+                    member = Target.class.getMember(member,flags,true);
+                }
+                decorators = decorators.map((d:any)=>{
+                    var DecorType:any = d.shift();
+                    var params = d,decor;
+                    if(typeof DecorType=="function"){
+                        if(!!DecorType.class){
+                            decor = new DecorType(...params);
+                        }else{
+                            decor = DecorType(...params);
+                            decor.constructor = DecorType;
+                        }
+                    } else {
+                        decor = DecorType;
+                    }
+                    if(typeof decor == 'function'){
+                        decor = new Decorator(decor)
+                    }
+                    return decor;
+                });
+                if(isClass){
+                    return Target.class.decorate(decorators);
+                }else{
+                    member.decorate(decorators)
+                }
+                
+            },Metadata,Type,Parameter);
         }
-        for(var i in this.members){
-            var member = this.members[i];
-            switch(member[reflection]){
-                case 'class' : this.members[i] = initClass(this,i,member);
-            }
+        if(target.__initializer){
+            target.__initializer(parent);
+            delete target.__initializer;
         }
+
     }
+
+
 }
 
 
