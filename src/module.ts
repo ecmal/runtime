@@ -17,25 +17,18 @@ declare global {
 }
 
 export class Module implements Module {
-    static modules:any = Object.create(null);
-    static set(module):Module{
-        this.modules[module.name] = module;
-        if(!(module instanceof Module)){
-            Object.setPrototypeOf(module,Module.prototype);
-        }
-        return module;
-    }
     static add(name,requires,definer):Module{
-        var module = Module.set({name:name});
-        Module.call(module,name,requires,definer);
-        return module;
+        return Object.defineProperty(system.modules,name,{
+            writable     : false,
+            enumerable   : true,
+            configurable : false,
+            value        : new Module(name,requires,definer)
+        })[name];
     }
     static get(name){
-        return this.modules[name]
+        return system.modules[name];
     }
-    static remove(name){
-        delete this.modules[name];
-    }
+
     static extend(d:Function, b:Function) {
         if(b){
             Object.setPrototypeOf(d, b);
@@ -98,7 +91,12 @@ export class Module implements Module {
         if(this.definer) {
             if (this.definer.setters && this.definer.setters.length) {
                 this.definer.setters.forEach((setter, i)=> {
-                    setter(Module.get(this.requires[i]).exports);
+                    var resolved = Module.get(this.requires[i]);
+                    if(resolved) {
+                        setter(resolved.exports);
+                    }else{
+                        console.info(this.requires[i],Module.get(this.requires[i]))
+                    }
                 });
             }
             delete this.definer.setters;
@@ -128,21 +126,33 @@ export class Module implements Module {
         var Child,Parent;
         Object.defineProperty(this.members,target.name,{
             value : Object.defineProperty(target,'class',{
-                value : Child = new Class(module,target.name,target)
+                value : Child = new Class(this,target.name,target)
             }).class
         });
         Module.extend(target,parent);
+        if(target.__initializer){
+            target.__initializer(parent);
+            delete target.__initializer;
+        }
         if(target.__decorator){
             var __decorator = target.__decorator;
             delete target.__decorator;
             __decorator((t,f,m,d)=>{
                 var isClass = typeof m!='string';
-                var Target=t,decorators=d,member=m,flags=f;
+                var Target=t,decorators=d,member,flags=f;
 
                 if(isClass){
                     decorators = f;
                 }else{
-                    member = Target.class.getMember(member,flags,true);
+                    member = Target.class.getMember(m,flags);
+                    if(!member){
+                        member = Target.class.getMember(m,flags,{
+                            configurable : true,
+                            writable     : true,
+                            enumerable   : Modifier.has(flags,Modifier.PUBLIC),
+                            value        : null
+                        })
+                    }
                 }
                 decorators = decorators.map((d:any)=>{
                     var DecorType:any = d.shift();
@@ -152,7 +162,9 @@ export class Module implements Module {
                             decor = new DecorType(...params);
                         }else{
                             decor = DecorType(...params);
-                            decor.constructor = DecorType;
+                            if(decor){
+                                decor.constructor = DecorType;
+                            }
                         }
                     } else {
                         decor = DecorType;
@@ -160,19 +172,26 @@ export class Module implements Module {
                     if(typeof decor == 'function'){
                         decor = new Decorator(decor)
                     }
+                    if(!decor){
+                        throw new Error(`Decorator "${DecorType.name}" must return a value`)
+                    }
+                    if(!(decor instanceof Decorator)){
+                        decor = new Metadata(decor.constructor.name,decor)
+                    }
                     return decor;
                 });
                 if(isClass){
                     return Target.class.decorate(decorators);
                 }else{
-                    member.decorate(decorators)
+                    if(member){
+
+                        member.decorate(decorators)
+                    }else{
+
+                        console.info("undefined",Target.class.name,m,flags,Object.keys(Target.class.members))
+                    }
                 }
-                
             },Metadata,Type,Parameter);
-        }
-        if(target.__initializer){
-            target.__initializer(parent);
-            delete target.__initializer;
         }
 
     }

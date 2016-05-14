@@ -1,12 +1,17 @@
-/*export var TOP:string='Hello';
-export function Decor(){}
+import {Decorator} from "runtime/decorators";
+import {Class,Member} from "runtime/reflect/class";
+
+export var TOP:string='Hello';
+class Decor extends Decorator {
+    decorate(target: Class | Member): void{
+        console.info("TARGET",target);
+    }
+}
 export enum Enum{
     VALUE_1,VALUE_2
 }
 @Decor
 export class Four {
-    @Decor
-    static [TOP] = 'Hello';
 
     @Decor
     static staticVariable:string = 'Hello';
@@ -23,10 +28,6 @@ export class Four {
     static staticFunction(@Decor v:string):string{
         return this.staticVariable = v;
     }
-
-
-    @Decor
-    public [TOP] = 'Hello';
 
     @Decor
     public memberVariable:string = 'Hello';
@@ -51,6 +52,5 @@ export class Four {
         return this.memberVariable;
     }
 }
+
 export default new Four('Four Default');
-*/
-export default "FOUR";

@@ -1,20 +1,18 @@
+import {Class, Member} from "./reflect/class";
 export class Decorator {
-
     public name:string;
     public type:Function;
-
     constructor(decorate?){
         if(decorate){
-            this.decorate=decorate;
-            this.type = decorate.constructor;
+            this.type = decorate;
             this.name = decorate.constructor.name;
         }else{
             this.type = this.constructor;
             this.name = this.constructor.name;
         }
     }
-    decorate(target,key,descriptor){
-        console.info(target,key,descriptor)
+    decorate(target:Class|Member){
+        console.info(target)
     }
 }
 export class Type extends Decorator {}
@@ -25,6 +23,9 @@ export class Metadata extends Decorator {
         super();
         this.name = name;
         this.value = value;
+    }
+    decorate(target:Class|Member){
+        target.metadata[this.name] = this.value;
     }
 }
 export class Parameter extends Decorator {}

@@ -3,16 +3,19 @@ import {Module} from "./module";
 import {NodeLoader} from "./loader";
 import {BrowserLoader} from "./loader";
 import {Loader} from "./loader";
+import {Class} from "./reflect/class";
 
 declare var global:any;
 declare var window:any;
 
 declare global {
     interface System {
-        url     : string;
-        root    : string;
-        module  : Module;
-        modules : {[k:string]:Module};
+        url         : string;
+        root        : string;
+        platform    : "browser"|"node";
+        module      : Module;
+        modules     : {[k:string]:Module};
+        classes     : {[k:string]:Class};
     }
 }
 
@@ -23,6 +26,7 @@ export class System extends Emitter implements System {
     public platform : string;
     public module  : Module;
     public modules : {[k:string]:Module};
+    public classes : {[k:string]:Class};
 
     public import(name:string){
         return this.loader.import(name);
@@ -94,7 +98,6 @@ export class System extends Emitter implements System {
                 value        : new BrowserLoader()
             });
         }
-
         for(var n in this.modules){
             var m = this.modules[n];
             for(var i in m.members){
@@ -113,7 +116,10 @@ export class System extends Emitter implements System {
                 value           : m==module?null:module
             });
         }
-
+        Object.defineProperty(this,'classes',{
+            enumerable  : true,
+            value       : Class.map
+        });
         this.emit('init');
         if(this.promises && this.promises.length){
             var promise;

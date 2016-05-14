@@ -49,14 +49,6 @@ export abstract class Loader {
                     writable        : false,
                     value           : parent
                 });
-                Object.setPrototypeOf(m,Module.prototype);
-                Object.defineProperty(system.modules,m.name,{
-                    enumerable      :true,
-                    configurable    :false,
-                    writable        :false,
-                    value           :m.exports
-                });
-                Module.remove(m.name);
             });
             return system.modules[name];
         });
