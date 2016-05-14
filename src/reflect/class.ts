@@ -1,6 +1,4 @@
 import {Declaration} from "./declaration";
-import {Module} from "./module";
-
 
 export class Class extends Declaration {
     public module:Module;

@@ -1,6 +1,7 @@
 import Decor from "./decors"
 
-
+export {Decor};
+/*
 @Decor @Decor('value')
 export class Hello{
     constructor(
@@ -37,4 +38,4 @@ export class Hello{
     ):string{
         return null;
     }
-}
+}*/

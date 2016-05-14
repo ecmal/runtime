@@ -1,5 +1,4 @@
 import {Loader} from "./base";
-import {Module} from "../reflect/module";
 
 declare var window:any;
 
@@ -45,6 +44,7 @@ export class BrowserLoader extends Loader {
         });
     }
 }
+/*
 system.once('init',()=>{
     console.info("Hello Browser :)");
-});
+});*/

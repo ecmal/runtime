@@ -1,24 +1,17 @@
 import {Path} from "../helpers";
 import {IEmitter} from "../events";
-import {Module} from "../reflect/module";
-import {SystemModule} from "../system";
+import {Module} from "../module";
+import {System} from "../system";
 
-declare global {
-    interface System extends IEmitter {
-        root:string;
-        url:string;
-        modules:Module;
-    }
-}
 
 export abstract class Loader {
+
     protected abstract detectRoot():void;
     protected abstract loadModule(id:string,url:string):Promise<any>;
 
     private registrations:any;
-    private reflection:symbol;
 
-    constructor(reflection:symbol){
+    constructor(){
         if(!system.root){
             this.detectRoot();
             Object.defineProperty(system,'root',{
@@ -28,16 +21,13 @@ export abstract class Loader {
                 value:Path.resolve(Path.dirname(system.url),'..')
             });
         }
-        Object.defineProperty(this,'reflection',{
-            value:reflection
-        });
         Object.defineProperty(this,'registrations',{
             value:Object.create(null)
         });
     }
 
-    public import(name:string,parent:Module=system.module):Promise<any>{
-        return this.doImport(name,parent);
+    public import(name:string,parent?:Module):Promise<any>{
+        return this.doImport(name,parent||system.module);
     }
 
     public register(name:string,requires:string[],definer:Function):any{
@@ -48,11 +38,11 @@ export abstract class Loader {
      * @internal
      */
     private doImport(name:string,parent:Module):Promise<any>{
-        return this.doLoadModule(name).then(r=>this.doDefineModules()).then((modules:SystemModule[])=>{
+        return this.doLoadModule(name).then(r=>this.doDefineModules()).then((modules:Module[])=>{
             modules.forEach(m=>m.resolve());
-            SystemModule.get(name).execute();
+            Module.get(name).execute();
             modules.forEach(m=>m.execute());
-            modules.forEach((m:SystemModule)=>{
+            modules.forEach((m:Module)=>{
                 Object.defineProperty(m,'parent',{
                     enumerable      : true,
                     configurable    : false,
@@ -66,9 +56,9 @@ export abstract class Loader {
                     writable        :false,
                     value           :m.exports
                 });
-                SystemModule.remove(m.name);
-                m.initialize(this.reflection);
+                Module.remove(m.name);
             });
+            return system.modules[name];
         });
     }
 
@@ -105,7 +95,7 @@ export abstract class Loader {
         return Object.keys(this.registrations).map(name=>{
             var m = this.registrations[name];
             delete this.registrations[name];
-            var sm = SystemModule.add(name,m.requires,m.definer)
+            var sm = Module.add(name,m.requires,m.definer)
             Object.defineProperty(sm,'url',{
                 value:m.url
             });

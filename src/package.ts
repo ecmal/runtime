@@ -1,3 +1,4 @@
+
 declare var module : Module;
 
 interface Module {}
@@ -19,41 +20,67 @@ var system:System = <System> Object.create({
         })
     },
     register(name,requires,definer){
-        if(!this.registrations){
-            var registrations = this.registrations = Object.create(null);
-            setTimeout(()=>{
-                var System,name='runtime/system';
-                module=<Module>Object.create({
-                    define(type,value){
-                        if(!this.members){
-                            this.members = Object.create(null)
+        function executeModule(name,system){
+            var m = system.modules[name];
+            if(m.definer){
+                var definer = m.definer;
+                delete m.definer;
+                if(m.requires && m.requires.length){
+                    m.requires.forEach(r=>{
+                        executeModule(r,system)
+                    });
+                }
+                definer.execute();
+            }
+        }
+        function createModule(system,m){
+            var module = Object.create({
+                define(type,value){
+                    this.members[value.name] = value;
+                    value.__reflection = type;
+                },
+                export(name,value){
+                    if(typeof name=="object"){
+                        for(var k in name){
+                            this.exports[k] = name[k];
                         }
-                        this.members[value.name] = value;
-                    },
-                    export(name,value){
-                        if(!this.exports){
-                            this.exports = Object.create(null)
-                        }
+                    }else{
                         this.exports[name] = value;
-                    },
-                    init(target){
-                        if(target.name=='System'){
-                            System = target;
-                        }
-                        if(target.__initializer){
-                            target.__initializer();
-                            delete target.__initializer;
-                        }
                     }
-                });
-                module['name']=name;
-                registrations[name].definer(system,module).execute();
-                delete registrations[name];
+                }
+            });
+            module.name      = m.name;
+            module.exports   = Object.create(null);
+            module.members   = Object.create(null);
+            module.requires  = m.requires;
+            module.definer   = m.definer(system,module);
+            return module;
+        }
+        if(!this.modules){
+            this.modules = Object.create(null);
+            setTimeout(()=>{
+                var modules = system.modules;
+                for(let n in modules){
+                    modules[n] = createModule(system,modules[n]);
+                }
+                var Module =  modules['runtime/module'].exports.Module;
+                var System =  modules['runtime/system'].exports.System;
                 Object.setPrototypeOf(system,System.prototype);
+                for(let n in modules){
+                    var m = modules[n];
+                    m.definer.setters.forEach((s,i)=>{
+                        s(modules[m.requires[i]].exports);
+                    });
+                    Object.setPrototypeOf(m,Module.prototype);
+                }
+                executeModule('runtime/system',system);
+                for(let n in modules){
+                    executeModule(n,system);
+                }
                 System.call(system);
             })
         }
-        this.registrations[name] = {requires,definer}
+        this.modules[name] = {name,requires,definer}
     }
 });
 

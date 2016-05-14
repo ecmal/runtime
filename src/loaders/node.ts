@@ -1,4 +1,5 @@
 import {Loader} from "./base";
+
 declare var __filename;
 declare var __dirname;
 

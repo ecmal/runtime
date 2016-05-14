@@ -1,4 +1,4 @@
-export var TOP:string='Hello';
+/*export var TOP:string='Hello';
 export function Decor(){}
 export enum Enum{
     VALUE_1,VALUE_2
@@ -52,3 +52,5 @@ export class Four {
     }
 }
 export default new Four('Four Default');
+*/
+export default "FOUR";
