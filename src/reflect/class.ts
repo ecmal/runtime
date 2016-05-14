@@ -23,6 +23,7 @@ export class Modifier {
 
 }
 export class Member extends Declaration {
+    public id:string;
     public flags:number;
     public owner:Class;
     public decorators:Decorator[];
@@ -47,6 +48,7 @@ export class Member extends Declaration {
         if(this.constructor == Member){
             throw new Error('Member is abstract class');
         }
+
         Object.defineProperty(this,'owner',{
             enumerable   : true,
             value        : owner
@@ -55,6 +57,10 @@ export class Member extends Declaration {
             enumerable   : true,
             configurable : true,
             value        : flags
+        });
+        Object.defineProperty(this,'id',{
+            enumerable  : true,
+            value       : `${this.owner.id}${this.isStatic?'.':':'}${this.name}`
         });
         if(!this.original){
             Object.defineProperty(this,'original',{
@@ -81,17 +87,11 @@ export class Member extends Declaration {
         })
     }
     public toString(){
-        return `${this.owner.name}${this.isStatic?'.':':'}${this.name}`
+        return `${this.constructor.name}(${this.owner.name}${this.isStatic?'.':':'}${this.name})`
     }
 }
-export class Property extends Member {
-
-}
-export class Method extends Member {
-    public toString(){
-        return `${this.owner.name}${this.isStatic?'.':':'}${this.name}()`
-    }
-}
+export class Property extends Member {}
+export class Method extends Member {}
 export class Constructor extends Method {}
 export class Class extends Declaration {
 
@@ -134,11 +134,11 @@ export class Class extends Declaration {
 
         Object.getOwnPropertyNames(this.value).forEach(name=>{
             if(name!='arguments' && name!='caller' && name!='prototype' && name!='__decorator' && name!='__initializer') {
-                console.info(this.getMember(name, Modifier.PUBLIC | Modifier.STATIC, true).toString())
+                this.getMember(name, Modifier.PUBLIC | Modifier.STATIC, true)
             }
         });
         Object.getOwnPropertyNames(this.value.prototype).forEach(name=>{
-            console.info(this.getMember(name,Modifier.PUBLIC, true).toString())
+            this.getMember(name,Modifier.PUBLIC, true)
         });
         function getParents(target){
             function getParent(target){
@@ -162,7 +162,6 @@ export class Class extends Declaration {
         var key = `${isStatic ? '.':':'}${name}`;
         var member = this.members[key];
         if(!member){
-            console.info(key,name,flags);
             var scope  = isStatic?this.value:this.value.prototype;
             if(!!descriptor){
                 var desc:PropertyDescriptor;

@@ -122,7 +122,7 @@ export class Module implements Module {
     }
 
     private addClass(target,parent){
-        console.info("Class:",target.name,parent?parent.name:'');
+
         var Child,Parent;
         Object.defineProperty(this.members,target.name,{
             value : Object.defineProperty(target,'class',{
@@ -135,15 +135,18 @@ export class Module implements Module {
             delete target.__initializer;
         }
         if(target.__decorator){
+            console.info("Class:",Child.id);
             var __decorator = target.__decorator;
             delete target.__decorator;
             __decorator((t,f,m,d)=>{
-                var isClass = typeof m!='string';
+                var isStatic,isClass = typeof m!='string';
+
                 var Target=t,decorators=d,member,flags=f;
 
                 if(isClass){
                     decorators = f;
                 }else{
+                    isStatic = Modifier.has(flags,Modifier.PUBLIC);
                     member = Target.class.getMember(m,flags);
                     if(!member){
                         member = Target.class.getMember(m,flags,{
@@ -181,14 +184,15 @@ export class Module implements Module {
                     return decor;
                 });
                 if(isClass){
+                    console.info(`  Decorating ${Target.class.id}`,decorators);
                     return Target.class.decorate(decorators);
                 }else{
                     if(member){
+                        console.info(`  Decorating ${member.id}`,decorators);
+                        member.decorate(decorators);
 
-                        member.decorate(decorators)
                     }else{
-
-                        console.info("undefined",Target.class.name,m,flags,Object.keys(Target.class.members))
+                        throw new Error(`Can't decorate ${Target.class.id}${isStatic?'.':'.'}${m}(${flags}) is undefined`)
                     }
                 }
             },Metadata,Type,Parameter);

@@ -1,9 +1,9 @@
-import {Decor as Wow, Meta} from "./decor/decors";
+import {Decor, Meta, DecorExtended} from "./decor/decors";
 
-@Wow('Hello','world')
-class Decorated {
+@Decor('Hello','world')
+export class Decorated {
     @Meta(56) public hello;
+    @DecorExtended(56) public extended;
 }
 
-export {Decorated as Hello};
 export default new Decorated();
