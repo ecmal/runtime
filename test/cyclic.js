@@ -1,5 +1,5 @@
 require('../out/runtime/package');
-System.import('cyclic/cyclic')
+system.import('cyclic/cyclic')
     .then(function(r){
         console.info(r);
     })

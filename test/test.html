@@ -8,9 +8,9 @@
 </head>
 <body>
 <script>
-    system.import('cyclic/test')
-    .then(function(exports){
-        console.info(exports)
+    system.import('models/main')
+    .then(function(module){
+        console.info(module.default)
     })
     .catch(function(error){
         console.error(error.stack||error)

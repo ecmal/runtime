@@ -1,14 +1,9 @@
 ///<reference path="./package"/>
+
 const EVENTS:symbol = Symbol('events');
 const LISTENER:symbol = Symbol('listener');
 
-export interface IEmitter {
-    on(event: string, handler: Function):(options:any)=>void;
-    once(event: string, handler: Function):(options:any)=>void;
-    off(event?: string, handler?: Function): void;
-    emit(event: string, ...args: any[]): any[];
-}
-export class Emitter implements IEmitter {
+export class Emitter {
     public on(event:string,handler:Function):(options:any)=>void{
         var events = this[EVENTS];
         if(!events){

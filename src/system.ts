@@ -1,9 +1,9 @@
 import {Emitter} from "./events";
-import {Module} from "./module";
+import {Module,ModuleMap} from "./module";
 import {NodeLoader} from "./loader";
 import {BrowserLoader} from "./loader";
 import {Loader} from "./loader";
-import {Class} from "./reflect/class";
+import {Class,ClassMap} from "./reflect/class";
 
 declare var global:any;
 declare var window:any;
@@ -16,17 +16,17 @@ declare global {
         module      : Module;
         modules     : {[k:string]:Module};
         classes     : {[k:string]:Class};
+        globals     : any;
     }
 }
-
 export class System extends Emitter implements System {
 
-    public url : string;
-    public root : string;
+    public url      : string;
+    public root     : string;
     public platform : string;
-    public module  : Module;
-    public modules : {[k:string]:Module};
-    public classes : {[k:string]:Class};
+    public module   : Module;
+    public modules  : ModuleMap;
+    public classes  : ClassMap;
 
     public import(name:string){
         return this.loader.import(name);
@@ -71,6 +71,7 @@ export class System extends Emitter implements System {
             value        : this.modules
         });
         if(typeof global!='undefined') {
+            global.system = system;
             Object.defineProperty(this,'platform',{
                 enumerable   : true,
                 writable     : false,
@@ -85,6 +86,7 @@ export class System extends Emitter implements System {
             });
         } else
         if(typeof window!='undefined') {
+            window.system = system;
             Object.defineProperty(this,'platform',{
                 enumerable   : true,
                 writable     : false,
@@ -129,6 +131,6 @@ export class System extends Emitter implements System {
             delete this.promises;
         }
     }
+    
 }
-
 export default system;

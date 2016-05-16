@@ -23,5 +23,4 @@ export function Meta(type):any{
         
     }
 }
-
 export default new Decor('hello','world');

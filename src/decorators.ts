@@ -1,31 +1,49 @@
-import {Class, Member} from "./reflect/class";
-export class Decorator {
-    public name:string;
+import {Constructor, Method, Property, Parameter} from "./reflect/class";
+export abstract class Annotator {
+    abstract decorate(target:Constructor|Method|Property|Parameter);
+}
+export class Decorator extends Annotator {
+    public value:any;
     public type:Function;
-    constructor(decorate?){
-        if(decorate){
-            this.type = decorate;
-            this.name = decorate.constructor.name;
-        }else{
-            this.type = this.constructor;
-            this.name = this.constructor.name;
+    constructor(type:Function,value:any){
+        super();
+        if(type && value){
+            Object.defineProperty(this,'type',{
+                enumerable      :true,
+                writable        :false,
+                configurable    :false,
+                value           :type,
+            });
+            Object.defineProperty(this,'value',{
+                enumerable      :true,
+                writable        :false,
+                configurable    :false,
+                value           :value,
+            })
         }
     }
-    decorate(target:Class|Member){
+    decorate(target:Constructor|Method|Property|Parameter){
         console.info(target)
     }
 }
-export class Type extends Decorator {}
-export class Metadata extends Decorator {
-    public name:string;
-    public value:string;
-    constructor(name:string,value:any){
+export class Metadata extends Annotator {
+    constructor(name:String,value:any){
         super();
-        this.name = name;
-        this.value = value;
+        Object.defineProperty(this,'name',{
+            enumerable      :true,
+            writable        :false,
+            configurable    :false,
+            value           :name,
+        });
+        Object.defineProperty(this,'value',{
+            enumerable      :true,
+            writable        :false,
+            configurable    :false,
+            value           :value,
+        })
     }
-    decorate(target:Class|Member){
-        target.metadata[this.name] = this.value;
+    decorate(target:Constructor|Method|Property|Parameter){
+        console.info(target)
     }
 }
-export class Parameter extends Decorator {}
+

@@ -1,9 +1,10 @@
-
-declare var module : Module;
-
 interface Module {}
 interface System {}
-
+declare var module : Module;
+/**
+ * @internal
+ */
+declare var global,require,__filename,__dirname;
 var system:System = <System> Object.create({
     import(module):Promise<any>{
         return this.init().then(()=>{
@@ -20,8 +21,17 @@ var system:System = <System> Object.create({
         })
     },
     register(name,requires,definer){
+        function initNodeJsDefaults(){
+            // saving nodejs module and require
+            if(typeof global!='undefined'){
+                global.system = system;
+                global.module = module;
+                global.require = require;
+                global.__dirname = __dirname;
+                global.__filename = __filename;
+            }
+        }
         function executeModule(name,system,extend){
-
             var m = system.modules[name];
             if(m.definer){
                 var definer = m.definer;
@@ -67,6 +77,7 @@ var system:System = <System> Object.create({
         }
         if(!this.modules){
             this.modules = Object.create(null);
+            initNodeJsDefaults();
             setTimeout(()=>{
                 var modules = system.modules;
                 for(let n in modules){
@@ -77,7 +88,7 @@ var system:System = <System> Object.create({
 
                 Object.setPrototypeOf(system,System.prototype);
                 for(let n in modules){
-                    var m = modules[n];
+                    var m:any = modules[n];
                     m.definer.setters.forEach((s,i)=>{
                         s(modules[m.requires[i]].exports);
                     });
@@ -88,7 +99,8 @@ var system:System = <System> Object.create({
                     executeModule(n,system,Module.extend);
                 }
                 System.call(system);
-            })
+            });
+
         }
         this.modules[name] = {name,requires,definer}
     }

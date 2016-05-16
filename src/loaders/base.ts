@@ -1,8 +1,5 @@
 import {Path} from "../helpers";
-import {IEmitter} from "../events";
 import {Module} from "../module";
-import {System} from "../system";
-
 
 export abstract class Loader {
 
@@ -27,9 +24,8 @@ export abstract class Loader {
     }
 
     public import(name:string,parent?:Module):Promise<any>{
-        return this.doImport(name,parent||system.module);
+        return this.doImport(name,parent||system.module).then(m=>m.exports);
     }
-
     public register(name:string,requires:string[],definer:Function):any{
         this.registrations[name] = {requires,definer};
     }

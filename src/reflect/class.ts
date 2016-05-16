@@ -1,8 +1,67 @@
 import {Declaration} from "./declaration";
-import {Decorator} from "../decorators";
+import {Decorator, Annotator, Metadata} from "../decorators";
 declare global {
     interface Function {
         class:Class;
+    }
+}
+export interface ClassMap {
+    [name:string]:Module;
+}
+
+enum MemberModifiers {
+    None        = 0,
+    Public      = 8,
+    Private     = 16,
+    Protected   = 32,
+    Static      = 64,
+    Abstract    = 128,
+}
+
+enum MemberType {
+    PROPERTY    = 142,
+    METHOD      = 144,
+    GETTER      = 146,
+    SETTER      = 147,
+    CLASS       = 217
+}
+
+export class Type {
+    static get(reference:string|Function|Type,...params):Type{
+        if(reference instanceof Type){
+            return reference;
+        }else{
+            return new Type(reference,params);
+        }
+    }
+    constructor(value,params){
+        if(typeof value=='string'){
+            Object.defineProperty(this,'module',{
+                enumerable      : true,
+                configurable    : true,
+                writable        : false,
+                value           : value
+            });
+            Object.defineProperty(this,'interface',{
+                enumerable      : true,
+                configurable    : true,
+                writable        : false,
+                value           : params[0]
+            });
+        }else{
+            Object.defineProperty(this,'reference',{
+                enumerable      :true,
+                configurable    :true,
+                writable        :false,
+                value           :value
+            });
+            Object.defineProperty(this,'parameters',{
+                enumerable      : true,
+                configurable    : true,
+                writable        : false,
+                value           : params
+            });
+        }
     }
 }
 export class Modifier {
@@ -19,6 +78,34 @@ export class Modifier {
 
     static has(a:number,b:number):boolean{
         return (a&b)==b;
+    }
+
+}
+export class Parameter extends Declaration{
+    public owner:Method;
+    public type:Type;
+    public flags:number;
+
+    constructor(owner:Method,name:string,flags:number,type:Type){
+        super(name);
+        Object.defineProperty(this,'owner',{
+            enumerable      : true,
+            writable        : false,
+            configurable    : false,
+            value           : owner
+        });
+        Object.defineProperty(this,'flags',{
+            enumerable      : true,
+            writable        : false,
+            configurable    : false,
+            value           : flags
+        });
+        Object.defineProperty(this,'type',{
+            enumerable      : true,
+            writable        : false,
+            configurable    : false,
+            value           : type
+        });
     }
 
 }
@@ -94,8 +181,10 @@ export class Property extends Member {}
 export class Method extends Member {}
 export class Constructor extends Method {}
 export class Class extends Declaration {
-
-    static get map():{[id:string]:Class}{
+    static isClass(target:Function){
+        return target.class instanceof Class;
+    }
+    static get map():ClassMap{
         return Object.defineProperty(this,'map',{
             value:Object.create(null)
         })
@@ -199,18 +288,103 @@ export class Class extends Declaration {
         }
         return member;
     }
-    public decorate(decorators:Decorator[]){
-        if(!this.decorators){
-            Object.defineProperty(this,'decorators',{
-                enumerable      : true,
-                configurable    : true,
-                writable        : false,
-                value           : []
-            });
+
+    /**
+     * @internal
+     */
+    public decorate(type,name,flags,designType,returnType,decorators,parameters,interfaces){
+        function createAnnotator(type:any,params:any[]):Annotator {
+            var decorator:Annotator;
+            if(Class.isClass(type)){
+                decorator = new type(...params);
+            }else
+            if(typeof type =="function"){
+                decorator = type(...params);
+            }
+            if(decorator instanceof Annotator){
+                return decorator;
+            }else
+            if(typeof decorator == 'function'){
+                return new Decorator(type,decorator);
+            }else{
+                return new Metadata(type.name,<any>decorator);
+            }
         }
-        decorators.forEach(d=>{
-            this.decorators.push(d);
-            d.decorate(this);
-        })
+        var member = this.getMember(name,flags);
+        if(!member){
+            member = this.getMember(name,flags,{
+                enumerable      :true,
+                writable        :true,
+                configurable    :true,
+                value           :null
+            })
+        }
+        Object.defineProperty(member,'type',{
+            enumerable      : true,
+            writable        : true,
+            configurable    : true,
+            value           : Type.get(designType)
+        });
+        if(member instanceof Method){
+            if(member instanceof Constructor){
+                Object.defineProperty(member,'returns',{
+                    enumerable      : true,
+                    writable        : true,
+                    configurable    : true,
+                    value           : Type.get(this.value)
+                });
+                if(interfaces && interfaces.length){
+                    Object.defineProperty(member,'interfaces',{
+                        enumerable      : true,
+                        writable        : true,
+                        configurable    : true,
+                        value           : interfaces.map(i=>Type.get(i))
+                    });
+                }
+            }else{
+                Object.defineProperty(member,'returns',{
+                    enumerable      : true,
+                    writable        : true,
+                    configurable    : true,
+                    value           : Type.get(returnType)
+                });
+            }
+            if(parameters && parameters.length){
+                Object.defineProperty(member,'parameters',{
+                    enumerable      : true,
+                    writable        : true,
+                    configurable    : true,
+                    value           : parameters.map(p=>{
+                        var decorators = p[3];
+                        var parameter = new Parameter(member,p[0],p[1],Type.get(p[2]));
+                        if(decorators && decorators.length){
+                            Object.defineProperty(parameter,'decorators',{
+                                enumerable      : true,
+                                writable        : true,
+                                configurable    : true,
+                                value           : decorators.map((d:any[])=>{
+                                    var decorator:Annotator = createAnnotator(d.shift(),d);
+                                    decorator.decorate(parameter);
+                                    return decorator;
+                                })
+                            });
+                        }
+                        return parameter;
+                    })
+                });
+            }
+            if(decorators && decorators.length){
+                Object.defineProperty(member,'decorators',{
+                    enumerable      : true,
+                    writable        : true,
+                    configurable    : true,
+                    value           : decorators.map((d:any[])=>{
+                        var decorator:Annotator = createAnnotator(d.shift(),d);
+                        decorator.decorate(member);
+                        return decorator;
+                    })
+                });
+            }
+        }
     }
 }

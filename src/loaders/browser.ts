@@ -44,7 +44,3 @@ export class BrowserLoader extends Loader {
         });
     }
 }
-/*
-system.once('init',()=>{
-    console.info("Hello Browser :)");
-});*/

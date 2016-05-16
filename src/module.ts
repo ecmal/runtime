@@ -1,10 +1,7 @@
-import {Class, Modifier} from "./reflect/class";
-import {Decorator} from "./decorators";
-import {Metadata} from "./decorators";
-import {Parameter} from "./decorators";
-import {Type} from "./decorators";
+import {Class} from "./reflect/class";
+import {Type} from "./reflect/class";
 
-const reflection = Symbol('reflection');
+const REFLECT = Symbol('reflection');
 
 declare global {
     interface Module {
@@ -16,7 +13,14 @@ declare global {
     }
 }
 
+export interface ModuleMap {
+    [name:string]:Module;
+}
+
 export class Module implements Module {
+    /**
+     * @internal
+     */
     static add(name,requires,definer):Module{
         return Object.defineProperty(system.modules,name,{
             writable     : false,
@@ -25,10 +29,15 @@ export class Module implements Module {
             value        : new Module(name,requires,definer)
         })[name];
     }
-    static get(name){
-        return system.modules[name];
+    /**
+     * @internal
+     */
+    static get(name):Module{
+        return <Module>system.modules[name];
     }
-
+    /**
+     * @internal
+     */
     static extend(d:Function, b:Function) {
         if(b){
             Object.setPrototypeOf(d, b);
@@ -45,16 +54,25 @@ export class Module implements Module {
     public requires:string[];
     public members:any;
     public exports:any;
-    public definer:any;
 
-    constructor(name,requires,definer){
+    /**
+     * @internal
+     */
+    public definer:any;
+    /**
+     * @internal
+     */
+    public constructor(name,requires,definer){
         this.name = name;
         this.requires = requires;
         this.members = Object.create(null);
         this.exports = Object.create(null);
-        this.exports[reflection] = this;
+        this.exports[REFLECT] = this;
         this.definer = definer(system,this);
     }
+    /**
+     * @internal
+     */
     public define(type,value){
         value.__reflection = type;
         switch(type){
@@ -69,6 +87,9 @@ export class Module implements Module {
                 break;
         }
     }
+    /**
+     * @internal
+     */
     public export(key,value){
         if(typeof key == 'object'){
             for(var k in key){
@@ -78,15 +99,41 @@ export class Module implements Module {
             this.exports[key] = value;
         }
     }
+    /**
+     * @internal
+     */
     public init(target,parent){
+        const addClass=(target,parent)=>{
+            var Child:Class,Parent;
+            Object.defineProperty(this.members,target.name,{
+                value : Object.defineProperty(target,'class',{
+                    value : Child = target[REFLECT] = new Class(this,target.name,target)
+                }).class
+            });
+            Module.extend(target,parent);
+            if(target.__initializer){
+                target.__initializer(parent);
+                delete target.__initializer;
+            }
+            if(target.__decorator){
+                var __decorator = target.__decorator;
+                delete target.__decorator;
+                __decorator((t,n,f,dt,rt,d,p,i)=>{
+                    Child.decorate(t,n,f,dt,rt,d,p,i);
+                },Type.get);
+            }
+        };
         if(target.__reflection){
             var type = target.__reflection;
             delete target.__reflection;
             if(type=='class'){
-                this.addClass(target,parent);
+                addClass(target,parent);
             }
         }
     }
+    /**
+     * @internal
+     */
     public resolve(){
         if(this.definer) {
             if (this.definer.setters && this.definer.setters.length) {
@@ -103,104 +150,24 @@ export class Module implements Module {
         }
         return this;
     }
+    /**
+     * @internal
+     */
     public execute(){
         if(this.definer){
             var definer = this.definer;
             delete this.definer;
             if(this.requires && this.requires.length){
                 this.requires.forEach(r=>{
-                    var m = Module.get(r);
+                    var m:Module = Module.get(r);
                     if(m && m.execute){
                         m.execute();
                     }
                 });
             }
-            console['group']("Module:execute", this.name);
             definer.execute();
-            console['groupEnd']();
         }
     }
-
-    private addClass(target,parent){
-
-        var Child,Parent;
-        Object.defineProperty(this.members,target.name,{
-            value : Object.defineProperty(target,'class',{
-                value : Child = new Class(this,target.name,target)
-            }).class
-        });
-        Module.extend(target,parent);
-        if(target.__initializer){
-            target.__initializer(parent);
-            delete target.__initializer;
-        }
-        if(target.__decorator){
-            console.info("Class:",Child.id);
-            var __decorator = target.__decorator;
-            delete target.__decorator;
-            __decorator((t,f,m,d)=>{
-                var isStatic,isClass = typeof m!='string';
-
-                var Target=t,decorators=d,member,flags=f;
-
-                if(isClass){
-                    decorators = f;
-                }else{
-                    isStatic = Modifier.has(flags,Modifier.PUBLIC);
-                    member = Target.class.getMember(m,flags);
-                    if(!member){
-                        member = Target.class.getMember(m,flags,{
-                            configurable : true,
-                            writable     : true,
-                            enumerable   : Modifier.has(flags,Modifier.PUBLIC),
-                            value        : null
-                        })
-                    }
-                }
-                decorators = decorators.map((d:any)=>{
-                    var DecorType:any = d.shift();
-                    var params = d,decor;
-                    if(typeof DecorType=="function"){
-                        if(!!DecorType.class){
-                            decor = new DecorType(...params);
-                        }else{
-                            decor = DecorType(...params);
-                            if(decor){
-                                decor.constructor = DecorType;
-                            }
-                        }
-                    } else {
-                        decor = DecorType;
-                    }
-                    if(typeof decor == 'function'){
-                        decor = new Decorator(decor)
-                    }
-                    if(!decor){
-                        throw new Error(`Decorator "${DecorType.name}" must return a value`)
-                    }
-                    if(!(decor instanceof Decorator)){
-                        decor = new Metadata(decor.constructor.name,decor)
-                    }
-                    return decor;
-                });
-                if(isClass){
-                    console.info(`  Decorating ${Target.class.id}`,decorators);
-                    return Target.class.decorate(decorators);
-                }else{
-                    if(member){
-                        console.info(`  Decorating ${member.id}`,decorators);
-                        member.decorate(decorators);
-
-                    }else{
-                        throw new Error(`Can't decorate ${Target.class.id}${isStatic?'.':'.'}${m}(${flags}) is undefined`)
-                    }
-                }
-            },Metadata,Type,Parameter);
-        }
-
-    }
-
-
 }
 
 
