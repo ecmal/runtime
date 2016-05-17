@@ -11,6 +11,7 @@
     "vendor"      : "out"
   },
   "libraries"     : {
-    "core"        : "0.0.1"
+    "core"        : "0.0.1",
+    "node"        : "0.0.1"
   }
 }

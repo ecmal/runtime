@@ -1,5 +1,5 @@
 require('./out/runtime/package');
-System.import('nodejs/index')
+system.import('nodejs/index')
     .catch(function(e){
         console.error(e.stack)
     })

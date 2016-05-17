@@ -1,5 +1,6 @@
 import {One} from "./one";
 import {Two} from "./two";
+
 import * as FS from "node/fs";
 import * as CP from "node/child_process";
 
@@ -25,10 +26,10 @@ export class Main extends Base {
     public two:Two = new Two();
 
     constructor(config){
-        super(config)
-        console.info(__dirname);
-        console.info(__filename);
-        console.info(require('http-server'));
+        super(config);
+        console.info(system.globals.__dirname);
+        console.info(system.globals.__filename);
+        console.info(system.globals.require('http-server'));
         console.info(CP);
     }
 }

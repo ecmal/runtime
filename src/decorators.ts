@@ -1,32 +1,10 @@
-import {Constructor, Method, Property, Parameter} from "./reflect/class";
-export abstract class Annotator {
-    abstract decorate(target:Constructor|Method|Property|Parameter);
+import {Member} from "./reflect/class";
+
+export class Decorator {
+    public decorate(target:Member){}
 }
-export class Decorator extends Annotator {
-    public value:any;
-    public type:Function;
-    constructor(type:Function,value:any){
-        super();
-        if(type && value){
-            Object.defineProperty(this,'type',{
-                enumerable      :true,
-                writable        :false,
-                configurable    :false,
-                value           :type,
-            });
-            Object.defineProperty(this,'value',{
-                enumerable      :true,
-                writable        :false,
-                configurable    :false,
-                value           :value,
-            })
-        }
-    }
-    decorate(target:Constructor|Method|Property|Parameter){
-        console.info(target)
-    }
-}
-export class Metadata extends Annotator {
+
+export class Metadata extends Decorator {
     constructor(name:String,value:any){
         super();
         Object.defineProperty(this,'name',{
@@ -42,8 +20,8 @@ export class Metadata extends Annotator {
             value           :value,
         })
     }
-    decorate(target:Constructor|Method|Property|Parameter){
-        console.info(target)
+    decorate(target:Member){
+        console.info(`METADATA DECORATOR ${target.toString()}`);
     }
 }
 

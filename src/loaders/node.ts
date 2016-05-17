@@ -28,13 +28,24 @@ export class NodeLoader extends Loader {
     }
     protected loadModule(id:string,url:string):Promise<any>{
         return new Promise<any>((accept,reject)=>{
-            NodeLoader.fs.readFile(url, 'utf8', (err, data)=> {
-                if (err) {
-                    reject(err)
-                } else {
-                    accept(this.evalModule(id,url,data.toString()))
-                }
-            });
+            if(id.indexOf('node/')==0){
+                accept(this.evalModule(id,url,
+                `system.register("${id}",[], function(system,module) {
+                    var exported = system.globals.require("${id.substr(5)}");
+                    for(var name in exported){
+                        module.export(name,exported[name]);
+                    }
+                    module.export('default',exported);
+                })`))
+            }else{
+                NodeLoader.fs.readFile(url, 'utf8', (err, data)=> {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        accept(this.evalModule(id,url,data.toString()))
+                    }
+                });
+            }
         });
     }
     protected evalModule(id:string,url:string,data:string){

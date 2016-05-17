@@ -1,5 +1,6 @@
 import {Declaration} from "./declaration";
-import {Decorator, Annotator, Metadata} from "../decorators";
+import {Decorator} from "../decorators";
+
 declare global {
     interface Function {
         class:Class;
@@ -7,23 +8,6 @@ declare global {
 }
 export interface ClassMap {
     [name:string]:Module;
-}
-
-enum MemberModifiers {
-    None        = 0,
-    Public      = 8,
-    Private     = 16,
-    Protected   = 32,
-    Static      = 64,
-    Abstract    = 128,
-}
-
-enum MemberType {
-    PROPERTY    = 142,
-    METHOD      = 144,
-    GETTER      = 146,
-    SETTER      = 147,
-    CLASS       = 217
 }
 
 export class Type {
@@ -34,6 +18,10 @@ export class Type {
             return new Type(reference,params);
         }
     }
+
+    reference:Function;
+    parameters:any[];
+
     constructor(value,params){
         if(typeof value=='string'){
             Object.defineProperty(this,'module',{
@@ -65,16 +53,18 @@ export class Type {
     }
 }
 export class Modifier {
+    
+    static NONE              = 0;
+    static STATIC            = 1;   
+    static PUBLIC            = 2;   
+    static PROTECTED         = 4;   
+    static PRIVATE           = 8;   
+    static DECORATED         = 16;  
+    static ABSTRACT          = 32;  
+    static EXPORT            = 64;  
+    static DEFAULT           = 128; 
+   
 
-    static NONE      = 0;
-    static EXPORT    = 2;
-    static AMBIENT   = 4;
-    static PUBLIC    = 8;
-    static PRIVATE   = 16;
-    static PROTECTED = 32;
-    static STATIC    = 64;
-    static ABSTRACT  = 128;
-    static ASYNC     = 256;
 
     static has(a:number,b:number):boolean{
         return (a&b)==b;
@@ -115,8 +105,19 @@ export class Member extends Declaration {
     public owner:Class;
     public decorators:Decorator[];
     public original:PropertyDescriptor;
+    public type:Type;
     public set descriptor(v:PropertyDescriptor){
-        Object.defineProperty(this.scope,this.name,v)
+        var old = this.descriptor;
+        var changed = false;
+        for(var i in v){
+            if(old[i]!==v[i]){
+                changed = true;
+            }
+        }
+        if(changed){
+            //console.info("CHANGED",this.toString());
+            Object.defineProperty(this.scope,this.name,v);
+        }
     }
     public get descriptor():PropertyDescriptor{
         return Object.getOwnPropertyDescriptor(this.scope,this.name);
@@ -128,7 +129,7 @@ export class Member extends Declaration {
         return Modifier.has(this.flags,Modifier.PUBLIC);
     }
     public get scope(){
-        return this.isStatic?this.owner.value:this.owner.value.prototype
+        return this.isStatic?this.owner.value:this.owner.value.prototype;
     }
     constructor(owner:Class,name:string,flags:number,descriptor?:PropertyDescriptor){
         super(name);
@@ -174,13 +175,23 @@ export class Member extends Declaration {
         })
     }
     public toString(){
-        return `${this.constructor.name}(${this.owner.name}${this.isStatic?'.':':'}${this.name})`
+        return `Member(${this.owner.name}${this.isStatic?'.':':'}${this.name})`
     }
 }
 export class Property extends Member {}
 export class Method extends Member {}
 export class Constructor extends Method {}
 export class Class extends Declaration {
+    static extend(d:Function, b:Function) {
+        if(b){
+            Object.setPrototypeOf(d, b);
+            Object.setPrototypeOf(d.prototype, b.prototype);
+        }
+        Object.defineProperty(d.prototype, 'constructor', {
+            configurable    : true,
+            value           : d
+        });
+    }
     static isClass(target:Function){
         return target.class instanceof Class;
     }
@@ -192,6 +203,7 @@ export class Class extends Declaration {
     
     public id:string;
     public module:Module;
+    public original:Function;
     public value:Function;
 
     public members:{[name:string]:Member};
@@ -204,8 +216,12 @@ export class Class extends Declaration {
             enumerable  : true,
             value       : module
         });
+        Object.defineProperty(this,'original',{
+            value        : value
+        });
         Object.defineProperty(this,'value',{
-            value       : value
+            configurable : true,
+            value        : value
         });
         Object.defineProperty(this,'members',{
             value       : Object.create(null)
@@ -293,23 +309,65 @@ export class Class extends Declaration {
      * @internal
      */
     public decorate(type,name,flags,designType,returnType,decorators,parameters,interfaces){
-        function createAnnotator(type:any,params:any[]):Annotator {
-            var decorator:Annotator;
-            if(Class.isClass(type)){
-                decorator = new type(...params);
-            }else
+        var name = name||"constructor";
+        var decorateMember = (member:Member,type:any,params:any[]):any => {
+            var decorator:any = type;
             if(typeof type =="function"){
-                decorator = type(...params);
+                decorator = new type(...params);
             }
-            if(decorator instanceof Annotator){
-                return decorator;
-            }else
             if(typeof decorator == 'function'){
-                return new Decorator(type,decorator);
+                if(member instanceof Constructor){
+                    let value = decorator(this.value);
+                    if(typeof value =='function' && value!==this.value){
+                        Object.defineProperty(this,'value',{
+                                configurable : true,
+                                value        : value
+                        });
+                    }
+                }else{
+                    let old = member.descriptor;
+                    let value = decorator(member.scope,member.name,old);
+                    if(typeof value =='object' && (
+                        old.configurable    != value.configurable||
+                        old.enumerable      != value.enumerable||
+                        old.writable        != value.writable||
+                        old.value           != value.value||
+                        old.get             != value.get||
+                        old.set             != value.set
+                    )){
+                        member.descriptor = value;
+                    }
+                }
+            }else
+            if(decorator instanceof Decorator){
+                if(member instanceof Constructor){
+                    console.info("AAAAAAA Cons")
+                    let value = decorator.decorate(member);
+                    if(typeof value =='function' && value!==this.value){
+                        Object.defineProperty(this,'value',{
+                            configurable : true,
+                            value        : value
+                        });
+                    }
+                }else{
+                    let old = member.descriptor;
+                    let value = decorator.decorate(member);
+                    if(typeof value =='object' && (
+                            old.configurable    != value.configurable||
+                            old.enumerable      != value.enumerable||
+                            old.writable        != value.writable||
+                            old.value           != value.value||
+                            old.get             != value.get||
+                            old.set             != value.set
+                        )){
+                        member.descriptor = value;
+                    }
+                }
             }else{
-                return new Metadata(type.name,<any>decorator);
+                console.info(decorator);
             }
-        }
+            return decorator;
+        };
         var member = this.getMember(name,flags);
         if(!member){
             member = this.getMember(name,flags,{
@@ -325,6 +383,7 @@ export class Class extends Declaration {
             configurable    : true,
             value           : Type.get(designType)
         });
+        
         if(member instanceof Method){
             if(member instanceof Constructor){
                 Object.defineProperty(member,'returns',{
@@ -362,29 +421,26 @@ export class Class extends Declaration {
                                 enumerable      : true,
                                 writable        : true,
                                 configurable    : true,
-                                value           : decorators.map((d:any[])=>{
-                                    var decorator:Annotator = createAnnotator(d.shift(),d);
-                                    decorator.decorate(parameter);
-                                    return decorator;
-                                })
+                                value           : decorators
+                                    .map((d:any[])=>decorateMember(member,d.shift(),d))
+                                    .filter(d=>(d instanceof Decorator))
                             });
                         }
                         return parameter;
                     })
                 });
             }
-            if(decorators && decorators.length){
-                Object.defineProperty(member,'decorators',{
-                    enumerable      : true,
-                    writable        : true,
-                    configurable    : true,
-                    value           : decorators.map((d:any[])=>{
-                        var decorator:Annotator = createAnnotator(d.shift(),d);
-                        decorator.decorate(member);
-                        return decorator;
-                    })
-                });
-            }
         }
+        if(decorators && decorators.length){
+            Object.defineProperty(member,'decorators',{
+                enumerable      : true,
+                writable        : true,
+                configurable    : true,
+                value           : decorators
+                    .map((d:any[])=>decorateMember(member,d.shift(),d))
+                    .filter(d=>(d instanceof Decorator))
+            });
+        }
+        return this.value;
     }
 }

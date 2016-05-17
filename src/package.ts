@@ -4,7 +4,7 @@ declare var module : Module;
 /**
  * @internal
  */
-declare var global,require,__filename,__dirname;
+declare var global,require,__filename:string,__dirname:string;
 var system:System = <System> Object.create({
     import(module):Promise<any>{
         return this.init().then(()=>{
@@ -47,6 +47,7 @@ var system:System = <System> Object.create({
                         target.__initializer(parent);
                         delete target.__initializer;
                     }
+                    return target;
                 };
                 definer.execute();
                 delete m.init;
@@ -105,4 +106,3 @@ var system:System = <System> Object.create({
         this.modules[name] = {name,requires,definer}
     }
 });
-

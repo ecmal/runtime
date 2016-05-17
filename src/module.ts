@@ -38,15 +38,8 @@ export class Module implements Module {
     /**
      * @internal
      */
-    static extend(d:Function, b:Function) {
-        if(b){
-            Object.setPrototypeOf(d, b);
-            Object.setPrototypeOf(d.prototype, b.prototype);
-        }
-        Object.defineProperty(d.prototype, 'constructor', {
-            configurable    : true,
-            value           : d
-        });
+    static extend(a,b){
+        return Class.extend(a,b);
     }
 
     public name:string;
@@ -85,6 +78,10 @@ export class Module implements Module {
             case 'enum'     :
                 this.members[value.constructor.name] = value;
                 break;
+            case 'interface' :
+                this.members[value] = Type.get(this.name,value);
+                this.exports[value] = this.members[value];
+                break;
         }
     }
     /**
@@ -110,7 +107,7 @@ export class Module implements Module {
                     value : Child = target[REFLECT] = new Class(this,target.name,target)
                 }).class
             });
-            Module.extend(target,parent);
+            Class.extend(target,parent);
             if(target.__initializer){
                 target.__initializer(parent);
                 delete target.__initializer;
@@ -119,17 +116,21 @@ export class Module implements Module {
                 var __decorator = target.__decorator;
                 delete target.__decorator;
                 __decorator((t,n,f,dt,rt,d,p,i)=>{
-                    Child.decorate(t,n,f,dt,rt,d,p,i);
+                    return Child.decorate(t,n,f,dt,rt,d,p,i);
                 },Type.get);
             }
+            return Child.value;
         };
         if(target.__reflection){
+
             var type = target.__reflection;
             delete target.__reflection;
             if(type=='class'){
-                addClass(target,parent);
+                //console.info("init class ",target.name);
+                return addClass(target,parent);
             }
         }
+        return target;
     }
     /**
      * @internal

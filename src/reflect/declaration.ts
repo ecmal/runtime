@@ -3,7 +3,7 @@ import {Emitter} from "runtime/events";
 export class Declaration extends Emitter {
 
     public name:string;
-    public metadata:Map<string,any>;
+    public metadata:any;
 
     constructor(name:string){
         super();
