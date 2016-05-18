@@ -24,8 +24,6 @@ export function Cached(){
         };
     }
 }
-
-
 export class Bound extends Decorator {
     decorate(target: Member): any {
         if(target instanceof Constructor){

@@ -1,20 +1,17 @@
 import {Loader} from "./base";
 
-declare var __filename;
-declare var __dirname;
-
-
 export class NodeLoader extends Loader {
-    private static get fs():any{
+    private static get fs():any {
         return Object.defineProperty(this,'fs',<any>{
-            value:system.globals.require('fs')
+            value:system.node.require('fs')
         }).fs;
     }
-    private static get vm():any{
+    private static get vm():any {
         return Object.defineProperty(this,'vm',<any>{
-            value:system.globals.require('vm')
+            value:system.node.require('vm')
         }).vm;
     }
+
     protected get runtime():string {
         return __filename;
     }

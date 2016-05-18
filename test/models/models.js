@@ -1,5 +1,5 @@
-require('../out/runtime/package');
-system.import('models/package')
+require('../../out/runtime/package');
+system.import('models/main')
     .then(function(r){
         console.info(r);
     })

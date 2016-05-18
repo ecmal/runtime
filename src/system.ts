@@ -2,11 +2,30 @@ import {Emitter} from "./events";
 import {Module,ModuleMap} from "./module";
 import {NodeLoader} from "./loader";
 import {BrowserLoader} from "./loader";
+
+
 import {Loader} from "./loader";
 import {Class,ClassMap} from "./reflect/class";
 
+
 declare var global:any;
 declare var window:any;
+
+
+export interface Globals {
+    [k:string]:any;
+}
+export interface NodeGlobals {
+    process   : any;
+    module    : any;
+    dirname   : string;
+    filename  : string;
+    require(module:string):any;
+}
+
+export interface BrowserGlobals {
+    [k:string]:any;
+}
 
 declare global {
     interface System {
@@ -17,6 +36,8 @@ declare global {
         modules     : {[k:string]:Module};
         classes     : {[k:string]:Class};
         globals     : any;
+        node        : NodeGlobals;
+        browser     : BrowserGlobals;
     }
 }
 export class System extends Emitter implements System {
@@ -56,7 +77,7 @@ export class System extends Emitter implements System {
     /**
      * @internal
      */
-    public constructor(){
+    public constructor(process?){
         super();
         Object.defineProperty(this,'module',{
             enumerable   : true,
@@ -100,6 +121,7 @@ export class System extends Emitter implements System {
                 value        : new BrowserLoader()
             });
         }
+
         for(var n in this.modules){
             var m = this.modules[n];
             for(var i in m.members){
@@ -118,6 +140,8 @@ export class System extends Emitter implements System {
                 value           : m==module?null:module
             });
         }
+
+
         Object.defineProperty(this,'classes',{
             enumerable  : true,
             value       : Class.map
@@ -130,6 +154,7 @@ export class System extends Emitter implements System {
             }
             delete this.promises;
         }
+        console.info(this.platform);
     }
     
 }

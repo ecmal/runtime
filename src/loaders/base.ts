@@ -49,7 +49,9 @@ export abstract class Loader {
             return system.modules[name];
         });
     }
-
+    /**
+     * @internal
+     */
     private doLoadModule(id:string):Promise<any>{
         this.registrations[id] = true;
         var url = Path.resolve(system.root,`${id}.js`);
@@ -58,6 +60,9 @@ export abstract class Loader {
             return this.doLoadDependencies()
         })
     }
+    /**
+     * @internal
+     */
     private doLoadDependencies():Promise<any>{
         var requirements = [];
         for(var id in this.registrations){
@@ -79,6 +84,9 @@ export abstract class Loader {
         }
         return Promise.all(requirements.map(r=>this.doLoadModule(r)));
     }
+    /**
+     * @internal
+     */
     private doDefineModules():any[]{
         return Object.keys(this.registrations).map(name=>{
             var m = this.registrations[name];

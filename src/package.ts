@@ -4,7 +4,8 @@ declare var module : Module;
 /**
  * @internal
  */
-declare var global,require,__filename:string,__dirname:string;
+declare var global,process,require,__filename:string,__dirname:string;
+
 var system:System = <System> Object.create({
     import(module):Promise<any>{
         return this.init().then(()=>{
@@ -21,14 +22,30 @@ var system:System = <System> Object.create({
         })
     },
     register(name,requires,definer){
+        var executed = false;
+        if(!this.modules){
+            this.modules = Object.create(null);
+            initNodeJsDefaults();
+            if(typeof setTimeout=='function'){
+                setTimeout(bootstrap);
+            }
+        }
+        this.modules[name] = {name,requires,definer};
+        return bootstrap;
         function initNodeJsDefaults(){
-            // saving nodejs module and require
-            if(typeof global!='undefined'){
+            if(
+                typeof module  != 'undefined' &&
+                typeof global  != 'undefined' &&
+                typeof process != 'undefined'
+            ){
                 global.system = system;
-                global.module = module;
-                global.require = require;
-                global.__dirname = __dirname;
-                global.__filename = __filename;
+                system.node     = {
+                    module      : module,
+                    require     : require,
+                    process     : process,
+                    dirname     : __dirname,
+                    filename    : __filename
+                };
             }
         }
         function executeModule(name,system,extend){
@@ -76,33 +93,31 @@ var system:System = <System> Object.create({
             module.definer   = m.definer(system,module);
             return module;
         }
-        if(!this.modules){
-            this.modules = Object.create(null);
-            initNodeJsDefaults();
-            setTimeout(()=>{
-                var modules = system.modules;
-                for(let n in modules){
-                    modules[n] = createModule(system,modules[n]);
-                }
-                var Module =  modules['runtime/module'].exports.Module;
-                var System =  modules['runtime/system'].exports.System;
-
-                Object.setPrototypeOf(system,System.prototype);
-                for(let n in modules){
-                    var m:any = modules[n];
-                    m.definer.setters.forEach((s,i)=>{
-                        s(modules[m.requires[i]].exports);
-                    });
-                    Object.setPrototypeOf(m,Module.prototype);
-                }
-                executeModule('runtime/system',system,Module.extend);
-                for(let n in modules){
-                    executeModule(n,system,Module.extend);
-                }
-                System.call(system);
-            });
-
+        function bootstrap(process){
+            if(executed){
+                return;
+            }
+            executed=true;
+            var modules = system.modules;
+            for(let n in modules){
+                modules[n] = createModule(system,modules[n]);
+            }
+            var Module =  modules['runtime/module'].exports.Module;
+            var System =  modules['runtime/system'].exports.System;
+            Object.setPrototypeOf(system,System.prototype);
+            for(let n in modules){
+                var m:any = modules[n];
+                m.definer.setters.forEach((s,i)=>{
+                    s(modules[m.requires[i]].exports);
+                });
+                Object.setPrototypeOf(m,Module.prototype);
+            }
+            executeModule('runtime/system',system,Module.extend);
+            for(let n in modules){
+                executeModule(n,system,Module.extend);
+            }
+            System.call(system,process);
         }
-        this.modules[name] = {name,requires,definer}
+       
     }
 });
