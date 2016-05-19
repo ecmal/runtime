@@ -22,7 +22,6 @@ export interface NodeGlobals {
     filename  : string;
     require(module:string):any;
 }
-
 export interface BrowserGlobals {
     [k:string]:any;
 }
@@ -123,22 +122,29 @@ export class System extends Emitter implements System {
         }
 
         for(var n in this.modules){
-            var m = this.modules[n];
+            var m:Module = this.modules[n];
             for(var i in m.members){
-                m.init(m.members[i],void 0);
+                if(i.indexOf('runtime/')==0){
+                    m.execute();
+                }
             }
-            Object.defineProperty(m,'url',{
-                enumerable      : true,
-                configurable    : false,
-                writable        : false,
-                value           : this.url
-            });
-            Object.defineProperty(m,'parent',{
-                enumerable      : true,
-                configurable    : false,
-                writable        : false,
-                value           : m==module?null:module
-            });
+            if(!m.url){
+                Object.defineProperty(m,'url',{
+                    enumerable      : true,
+                    configurable    : false,
+                    writable        : false,
+                    value           : this.url
+                });
+            }
+            if(!m.parent){
+                Object.defineProperty(m,'parent',{
+                    enumerable      : true,
+                    configurable    : false,
+                    writable        : false,
+                    value           : m==module?null:module
+                });    
+            }
+            
         }
 
 
@@ -154,7 +160,6 @@ export class System extends Emitter implements System {
             }
             delete this.promises;
         }
-        console.info(this.platform);
     }
     
 }

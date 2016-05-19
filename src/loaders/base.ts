@@ -24,7 +24,14 @@ export abstract class Loader {
     }
 
     public import(name:string,parent?:Module):Promise<any>{
-        return this.doImport(name,parent||system.module).then(m=>m.exports);
+        if(system.modules[name]){
+            var m = <Module>system.modules[name];
+            m.execute();
+            return Promise.resolve(m.exports)
+        }else{
+            return this.doImport(name,parent||system.module).then(m=>m.exports);
+        }
+
     }
     public register(name:string,requires:string[],definer:Function):any{
         this.registrations[name] = {requires,definer};
@@ -87,13 +94,16 @@ export abstract class Loader {
     /**
      * @internal
      */
-    private doDefineModules():any[]{
+    protected doDefineModules():any[]{
         return Object.keys(this.registrations).map(name=>{
             var m = this.registrations[name];
             delete this.registrations[name];
             var sm = Module.add(name,m.requires,m.definer)
             Object.defineProperty(sm,'url',{
-                value:m.url
+                enumerable      : true,
+                configurable    : false,
+                writable        : false,
+                value           : m.url || system.url
             });
             return sm;
         });

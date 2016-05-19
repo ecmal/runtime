@@ -1,5 +1,6 @@
 import {Class} from "./reflect/class";
 import {Type} from "./reflect/class";
+import {Path} from "./helpers";
 
 const REFLECT = Symbol('reflection');
 
@@ -10,6 +11,7 @@ declare global {
         requires: string[];
         members: any;
         exports: any;
+        parent: Module;
     }
 }
 
@@ -47,6 +49,7 @@ export class Module implements Module {
     public requires:string[];
     public members:any;
     public exports:any;
+    public parent:Module;
 
     /**
      * @internal
@@ -156,6 +159,7 @@ export class Module implements Module {
      */
     public execute(){
         if(this.definer){
+            this.resolve();
             var definer = this.definer;
             delete this.definer;
             if(this.requires && this.requires.length){
@@ -166,6 +170,7 @@ export class Module implements Module {
                     }
                 });
             }
+
             definer.execute();
         }
     }

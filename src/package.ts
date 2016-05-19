@@ -1,5 +1,6 @@
 interface Module {}
 interface System {}
+
 declare var module : Module;
 /**
  * @internal
@@ -104,18 +105,26 @@ var system:System = <System> Object.create({
             }
             var Module =  modules['runtime/module'].exports.Module;
             var System =  modules['runtime/system'].exports.System;
+            var Path =  modules['runtime/helpers'].exports.Path;
             Object.setPrototypeOf(system,System.prototype);
             for(let n in modules){
                 var m:any = modules[n];
-                m.definer.setters.forEach((s,i)=>{
-                    s(modules[m.requires[i]].exports);
+                m.requires = m.requires.map(r=>{
+                    if(r[0]=='.'){
+                        return Path.resolve(Path.dirname(m.name),r)
+                    }else{
+                        return r;
+                    }
                 });
+                if(n.indexOf('runtime/')==0) {
+
+                    m.definer.setters.forEach((s, i)=> {
+                        s(modules[m.requires[i]].exports);
+                    });
+                }
                 Object.setPrototypeOf(m,Module.prototype);
             }
             executeModule('runtime/system',system,Module.extend);
-            for(let n in modules){
-                executeModule(n,system,Module.extend);
-            }
             System.call(system,process);
         }
        
