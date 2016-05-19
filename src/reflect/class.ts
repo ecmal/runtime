@@ -234,17 +234,19 @@ export class Class extends Declaration {
             enumerable  : true,
             value       : this
         });
-        delete this.value.name;
-        delete this.value.length;
+        //delete this.value.name;
+        //delete this.value.length;
 
         Object.getOwnPropertyNames(this.value).forEach(name=>{
             if(name!='arguments' && name!='caller' && name!='prototype' && name!='__decorator' && name!='__initializer') {
                 this.getMember(name, Modifier.PUBLIC | Modifier.STATIC, true)
             }
         });
+
         Object.getOwnPropertyNames(this.value.prototype).forEach(name=>{
             this.getMember(name,Modifier.PUBLIC, true)
         });
+
         function getParents(target){
             function getParent(target){
                 if(target.__proto__){
@@ -341,7 +343,6 @@ export class Class extends Declaration {
             }else
             if(decorator instanceof Decorator){
                 if(member instanceof Constructor){
-                    console.info("AAAAAAA Cons")
                     let value = decorator.decorate(member);
                     if(typeof value =='function' && value!==this.value){
                         Object.defineProperty(this,'value',{
