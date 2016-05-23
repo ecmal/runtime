@@ -1,7 +1,7 @@
-import {Member} from "./reflect/class";
+import {Declaration} from "./reflect/declaration";
 
 export class Decorator {
-    public decorate(target:Member){}
+    public decorate(target:Declaration){}
 }
 
 export class Metadata extends Decorator {
@@ -20,7 +20,7 @@ export class Metadata extends Decorator {
             value           :value,
         })
     }
-    decorate(target:Member){
+    decorate(target:Declaration){
         console.info(`METADATA DECORATOR ${target.toString()}`);
     }
 }

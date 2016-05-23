@@ -10,6 +10,30 @@ export interface ClassMap {
     [name:string]:Module;
 }
 
+export class Interface extends Declaration {
+    public id:string;
+    public module:Module;
+    public implementations:Class[];
+    constructor(module:Module,name:string){
+        super(name);
+        Object.defineProperty(this,'module',{
+            enumerable  : true,
+            value       : module
+        });
+        Object.defineProperty(this,'id',{
+            enumerable  : true,
+            value       : `${this.module.name}#${this.name}`
+        });
+        Object.defineProperty(this,'implementations',{
+            enumerable  : true,
+            value       : []
+        });
+        Object.defineProperty(system.classes,this.id,{
+            enumerable  : true,
+            value       : this
+        });
+    }
+}
 export class Type {
     static get(reference:string|Function|Type,...params):Type{
         if(reference instanceof Type){
@@ -19,37 +43,27 @@ export class Type {
         }
     }
 
-    reference:Function;
+    reference:Class;
     parameters:any[];
 
     constructor(value,params){
-        if(typeof value=='string'){
-            Object.defineProperty(this,'module',{
-                enumerable      : true,
-                configurable    : true,
-                writable        : false,
-                value           : value
-            });
-            Object.defineProperty(this,'interface',{
-                enumerable      : true,
-                configurable    : true,
-                writable        : false,
-                value           : params[0]
-            });
-        }else{
-            Object.defineProperty(this,'reference',{
-                enumerable      :true,
-                configurable    :true,
-                writable        :false,
-                value           :value
-            });
-            Object.defineProperty(this,'parameters',{
-                enumerable      : true,
-                configurable    : true,
-                writable        : false,
-                value           : params
-            });
-        }
+        Object.defineProperty(this,'reference',{
+            enumerable      :true,
+            configurable    :true,
+            get(){
+                if(value instanceof Function){
+                    return value.class
+                }else{
+                    return value;
+                }
+            }
+        });
+        Object.defineProperty(this,'parameters',{
+            enumerable      : true,
+            configurable    : true,
+            writable        : false,
+            value           : params
+        });
     }
 }
 export class Modifier {
@@ -71,18 +85,32 @@ export class Modifier {
     }
 
 }
-export class Parameter extends Declaration{
+export class Parameter extends Declaration {
+
+    public id:string;
     public owner:Method;
+    public index:number;
     public type:Type;
     public flags:number;
+    public decorators:Decorator[];
 
-    constructor(owner:Method,name:string,flags:number,type:Type){
+    constructor(owner:Method,name:string,index:number,flags:number,type:Type){
         super(name);
         Object.defineProperty(this,'owner',{
             enumerable      : true,
             writable        : false,
             configurable    : false,
             value           : owner
+        });
+        Object.defineProperty(this,'index',{
+            enumerable      : true,
+            writable        : false,
+            configurable    : false,
+            value           : index
+        });
+        Object.defineProperty(this,'id',{
+            enumerable  : true,
+            value       : `${this.owner.id}:${this.index}.${this.name}`
         });
         Object.defineProperty(this,'flags',{
             enumerable      : true,
@@ -97,7 +125,12 @@ export class Parameter extends Declaration{
             value           : type
         });
     }
-
+    public toString(){
+        return `${this.constructor.name}(${this.id})`
+    }
+    private inspect(){
+        return this.toString()
+    }
 }
 export class Member extends Declaration {
     public id:string;
@@ -175,13 +208,16 @@ export class Member extends Declaration {
         })
     }
     public toString(){
-        return `Member(${this.owner.name}${this.isStatic?'.':':'}${this.name})`
+        return `${this.constructor.name}(${this.owner.name}${this.isStatic?'.':':'}${this.name})`
+    }
+    private inspect(){
+        return this.toString()
     }
 }
 export class Property extends Member {}
 export class Method extends Member {}
 export class Constructor extends Method {}
-export class Class extends Declaration {
+export class Class extends Interface {
     static extend(d:Function, b:Function) {
         if(b){
             Object.setPrototypeOf(d, b);
@@ -195,11 +231,7 @@ export class Class extends Declaration {
     static isClass(target:Function){
         return target.class instanceof Class;
     }
-    static get map():ClassMap{
-        return Object.defineProperty(this,'map',{
-            value:Object.create(null)
-        })
-    }
+
     
     public id:string;
     public module:Module;
@@ -208,14 +240,11 @@ export class Class extends Declaration {
 
     public members:{[name:string]:Member};
     public decorators:Decorator[];
+    public interfaces:Type[];
 
     constructor(module:Module,name:string,value:Function){
-        super(name);
+        super(module,name);
 
-        Object.defineProperty(this,'module',{
-            enumerable  : true,
-            value       : module
-        });
         Object.defineProperty(this,'original',{
             value        : value
         });
@@ -224,29 +253,20 @@ export class Class extends Declaration {
             value        : value
         });
         Object.defineProperty(this,'members',{
+            enumerable  : true,
             value       : Object.create(null)
         });
-        Object.defineProperty(this,'id',{
-            enumerable  : true,
-            value       : `${this.module.name}#${this.name}`
-        });
-        Object.defineProperty(Class.map,this.id,{
-            enumerable  : true,
-            value       : this
-        });
+
         //delete this.value.name;
         //delete this.value.length;
-
         Object.getOwnPropertyNames(this.value).forEach(name=>{
             if(name!='arguments' && name!='caller' && name!='prototype' && name!='__decorator' && name!='__initializer') {
                 this.getMember(name, Modifier.PUBLIC | Modifier.STATIC, true)
             }
         });
-
         Object.getOwnPropertyNames(this.value.prototype).forEach(name=>{
             this.getMember(name,Modifier.PUBLIC, true)
         });
-
         function getParents(target){
             function getParent(target){
                 if(target.__proto__){
@@ -312,7 +332,7 @@ export class Class extends Declaration {
      */
     public decorate(type,name,flags,designType,returnType,decorators,parameters,interfaces){
         var name = name||"constructor";
-        var decorateMember = (member:Member,type:any,params:any[]):any => {
+        var decorateMember = (member:Declaration,type:any,params:any[]):any => {
             var decorator:any = type;
             if(typeof type =="function"){
                 decorator = new type(...params);
@@ -326,7 +346,8 @@ export class Class extends Declaration {
                                 value        : value
                         });
                     }
-                }else{
+                }else
+                if(member instanceof Member){
                     let old = member.descriptor;
                     let value = decorator(member.scope,member.name,old);
                     if(typeof value =='object' && (
@@ -339,6 +360,9 @@ export class Class extends Declaration {
                     )){
                         member.descriptor = value;
                     }
+                }else
+                if(member instanceof Parameter){
+                    decorator(member.owner.scope,member.owner.name,member.index);
                 }
             }else
             if(decorator instanceof Decorator){
@@ -350,7 +374,8 @@ export class Class extends Declaration {
                             value        : value
                         });
                     }
-                }else{
+                }else
+                if(member instanceof Member){
                     let old = member.descriptor;
                     let value = decorator.decorate(member);
                     if(typeof value =='object' && (
@@ -363,6 +388,8 @@ export class Class extends Declaration {
                         )){
                         member.descriptor = value;
                     }
+                }else{
+                    decorator.decorate(member);
                 }
             }else{
                 console.info(decorator);
@@ -384,8 +411,29 @@ export class Class extends Declaration {
             configurable    : true,
             value           : Type.get(designType)
         });
-        
         if(member instanceof Method){
+            if(parameters && parameters.length){
+                Object.defineProperty(member,'parameters',{
+                    enumerable      : true,
+                    writable        : true,
+                    configurable    : true,
+                    value           : parameters.map((p,i)=>{
+                        var decorators = p[3];
+                        var parameter = new Parameter(member,p[0],i,p[1],Type.get(p[2]));
+                        if(decorators && decorators.length){
+                            Object.defineProperty(parameter,'decorators',{
+                                enumerable      : true,
+                                writable        : true,
+                                configurable    : true,
+                                value           : decorators
+                                    .map((d:any[])=>decorateMember(parameter,d.shift(),d))
+                                    .filter(d=>(d instanceof Decorator))
+                            });
+                        }
+                        return parameter;
+                    })
+                });
+            }
             if(member instanceof Constructor){
                 Object.defineProperty(member,'returns',{
                     enumerable      : true,
@@ -394,7 +442,7 @@ export class Class extends Declaration {
                     value           : Type.get(this.value)
                 });
                 if(interfaces && interfaces.length){
-                    Object.defineProperty(member,'interfaces',{
+                    Object.defineProperty(this,'interfaces',{
                         enumerable      : true,
                         writable        : true,
                         configurable    : true,
@@ -409,28 +457,7 @@ export class Class extends Declaration {
                     value           : Type.get(returnType)
                 });
             }
-            if(parameters && parameters.length){
-                Object.defineProperty(member,'parameters',{
-                    enumerable      : true,
-                    writable        : true,
-                    configurable    : true,
-                    value           : parameters.map(p=>{
-                        var decorators = p[3];
-                        var parameter = new Parameter(member,p[0],p[1],Type.get(p[2]));
-                        if(decorators && decorators.length){
-                            Object.defineProperty(parameter,'decorators',{
-                                enumerable      : true,
-                                writable        : true,
-                                configurable    : true,
-                                value           : decorators
-                                    .map((d:any[])=>decorateMember(member,d.shift(),d))
-                                    .filter(d=>(d instanceof Decorator))
-                            });
-                        }
-                        return parameter;
-                    })
-                });
-            }
+
         }
         if(decorators && decorators.length){
             Object.defineProperty(member,'decorators',{
@@ -443,5 +470,9 @@ export class Class extends Declaration {
             });
         }
         return this.value;
+    }
+
+    public toString(){
+        return `Class(${this.id})`
     }
 }

@@ -1,4 +1,5 @@
 import {Class} from "./reflect/class";
+import {Interface} from "./reflect/class";
 import {Type} from "./reflect/class";
 import {Path} from "./helpers";
 
@@ -82,11 +83,12 @@ export class Module implements Module {
                 this.members[value.constructor.name] = value;
                 break;
             case 'interface' :
-                this.members[value] = Type.get(this.name,value);
+                this.members[value] = new Interface(this,value);
                 this.exports[value] = this.members[value];
                 break;
         }
     }
+
     /**
      * @internal
      */
@@ -99,6 +101,7 @@ export class Module implements Module {
             this.exports[key] = value;
         }
     }
+
     /**
      * @internal
      */
@@ -125,7 +128,6 @@ export class Module implements Module {
             return Child.value;
         };
         if(target.__reflection){
-
             var type = target.__reflection;
             delete target.__reflection;
             if(type=='class'){
@@ -170,8 +172,13 @@ export class Module implements Module {
                     }
                 });
             }
-
-            definer.execute();
+            try{
+                definer.execute();
+            }catch(ex){
+                var error = new Error(`module "${this.name}" execution error`);
+                error.stack +=`\ncause : \n${ex.stack}`;
+                throw error;
+            }
         }
     }
 }

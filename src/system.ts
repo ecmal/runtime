@@ -46,8 +46,11 @@ export class System extends Emitter implements System {
     public platform : string;
     public module   : Module;
     public modules  : ModuleMap;
-    public classes  : ClassMap;
-
+    public get classes():ClassMap{
+        return Object.defineProperty(this,'classes',{
+            value:Object.create(null)
+        }).classes
+    }
     public import(name:string){
         return this.loader.import(name);
     }
@@ -123,9 +126,9 @@ export class System extends Emitter implements System {
 
         for(var n in this.modules){
             var m:Module = this.modules[n];
-            for(var i in m.members){
-                if(i.indexOf('runtime/')==0){
-                    m.execute();
+            if(m.name.indexOf('runtime/')==0){
+                for(var i in m.members){
+                    m.init(m.members[i],null);
                 }
             }
             if(!m.url){
@@ -146,12 +149,6 @@ export class System extends Emitter implements System {
             }
             
         }
-
-
-        Object.defineProperty(this,'classes',{
-            enumerable  : true,
-            value       : Class.map
-        });
         this.emit('init');
         if(this.promises && this.promises.length){
             var promise;
