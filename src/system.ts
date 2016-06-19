@@ -7,6 +7,8 @@ import {BrowserLoader} from "./loader";
 import {Loader} from "./loader";
 import {Class,ClassMap} from "./reflect/class";
 
+import "./globals";
+
 
 declare var global:any;
 declare var window:any;
@@ -27,7 +29,7 @@ export interface BrowserGlobals {
 }
 
 declare global {
-    interface System {
+    interface System extends Emitter {
         url         : string;
         root        : string;
         platform    : "browser"|"node";
@@ -43,7 +45,6 @@ export class System extends Emitter implements System {
 
     public url      : string;
     public root     : string;
-    public platform : string;
     public module   : Module;
     public modules  : ModuleMap;
     public get classes():ClassMap{
@@ -65,11 +66,35 @@ export class System extends Emitter implements System {
             return global;
         }
     }
+    public get platform():string {
+        if(typeof global!='undefined') {
+            global.system = system;
+            return Object.defineProperty(this,'platform',{
+                enumerable   : true,
+                writable     : false,
+                configurable : false,
+                value        : 'node'
+            }).platform;
+        } else
+        if(typeof window!='undefined') {
+            window.system = system;
+            return Object.defineProperty(this,'platform',{
+                enumerable   : true,
+                writable     : false,
+                configurable : false,
+                value        : 'browser'
+            }).platform;
+        }
+    }
 
     /**
      * @internal
      */
     private promises : any[];
+    /**
+     * @internal
+     */
+    private events : any;
 
     /**
      * @internal
@@ -128,7 +153,16 @@ export class System extends Emitter implements System {
             var m:Module = this.modules[n];
             if(m.name.indexOf('runtime/')==0){
                 for(var i in m.members){
-                    m.init(m.members[i],null);
+                    var member = m.members[i];
+                    if(member.type == 'interface'){
+                        m.define(member.type,member.value);
+                    }else
+                    if(member.__reflection.type=='class'){
+                        Object.defineProperty(m.members,i,{
+                            enumerable  : true,
+                            value       : member.class
+                        });
+                    }
                 }
             }
             if(!m.url){
@@ -147,15 +181,34 @@ export class System extends Emitter implements System {
                     value           : m==module?null:module
                 });    
             }
-            
         }
+        if(this.events){
+            for(var i in this.events){
+                this.on(i,this.events[i]);
+            }
+            delete this.events;
+        }
+        console.info(`system started in ${(Date.now()-this['started'])/1000} seconds`,this.promises && this.promises.length)
         this.emit('init');
         if(this.promises && this.promises.length){
+            var resolved = [];
             var promise;
             while (promise = this.promises.shift()){
-                promise.accept();
+                resolved.push(new Promise((accept,reject)=>{
+                    promise.accept((success)=>{
+                        if(success){
+                            accept()
+                        }else{
+                            reject();
+                        }
+                    });
+                }));
+
             }
             delete this.promises;
+            Promise.all(resolved).then(()=>this.emit('load'));
+        }else{
+            this.emit('load');
         }
     }
     

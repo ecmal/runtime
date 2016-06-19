@@ -1,12 +1,11 @@
 import {Class} from "./reflect/class";
-import {Interface} from "./reflect/class";
-import {Type} from "./reflect/class";
-import {Path} from "./helpers";
+import {Interface} from "./reflect/interface";
+import {Declaration} from "./reflect/declaration";
 
 const REFLECT = Symbol('reflection');
 
 declare global {
-    interface Module {
+    interface Module extends Declaration {
         name:string;
         url: string;
         requires: string[];
@@ -20,17 +19,20 @@ export interface ModuleMap {
     [name:string]:Module;
 }
 
-export class Module implements Module {
+export class Module extends Declaration implements Module {
     /**
      * @internal
      */
     static add(name,requires,definer):Module{
-        return Object.defineProperty(system.modules,name,{
+        var m = new Module(name,requires,definer);
+        Object.defineProperty(system.modules,name,{
             writable     : false,
             enumerable   : true,
             configurable : false,
-            value        : new Module(name,requires,definer)
-        })[name];
+            value        : m
+        });
+        system.emit('module',m);
+        return m;
     }
     /**
      * @internal
@@ -60,7 +62,7 @@ export class Module implements Module {
      * @internal
      */
     public constructor(name,requires,definer){
-        this.name = name;
+        super(name);
         this.requires = requires;
         this.members = Object.create(null);
         this.exports = Object.create(null);
@@ -71,7 +73,7 @@ export class Module implements Module {
      * @internal
      */
     public define(type,value){
-        value.__reflection = type;
+        value.__reflection = {type:type,module:this};
         switch(type){
             case 'class'    :
                 this.members[value.name] = value;
@@ -106,33 +108,15 @@ export class Module implements Module {
      * @internal
      */
     public init(target,parent){
-        const addClass=(target,parent)=>{
-            var Child:Class,Parent;
-            Object.defineProperty(this.members,target.name,{
-                value : Object.defineProperty(target,'class',{
-                    value : Child = target[REFLECT] = new Class(this,target.name,target)
-                }).class
-            });
-            Class.extend(target,parent);
-            if(target.__initializer){
-                target.__initializer(parent);
-                delete target.__initializer;
-            }
-            if(target.__decorator){
-                var __decorator = target.__decorator;
-                delete target.__decorator;
-                __decorator((t,n,f,dt,rt,d,p,i)=>{
-                    return Child.decorate(t,n,f,dt,rt,d,p,i);
-                },Type.get);
-            }
-            return Child.value;
-        };
-        if(target.__reflection){
-            var type = target.__reflection;
-            delete target.__reflection;
-            if(type=='class'){
-                //console.info("init class ",target.name);
-                return addClass(target,parent);
+        if(target && target.__reflection){
+            if(target.__reflection.type=='class'){
+                target.__reflection.parent = parent;
+                var cls = target.class;
+                Object.defineProperty(this.members,cls.name,{
+                    enumerable  : true,
+                    value       : cls
+                });
+                return cls.value;
             }
         }
         return target;
@@ -151,6 +135,7 @@ export class Module implements Module {
                         console.info(this.requires[i],Module.get(this.requires[i]))
                     }
                 });
+                this.emit('resolve');
             }
             delete this.definer.setters;
         }
@@ -172,14 +157,22 @@ export class Module implements Module {
                     }
                 });
             }
+
             try{
                 definer.execute();
+                this.emit('execute');
             }catch(ex){
                 var error = new Error(`module "${this.name}" execution error`);
                 error.stack +=`\ncause : \n${ex.stack}`;
                 throw error;
             }
         }
+    }
+    public toString(){
+        return `Module(${this.name})`
+    }
+    private inspect(){
+        return this.toString();
     }
 }
 

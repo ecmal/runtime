@@ -29,7 +29,10 @@ export abstract class Loader {
             m.execute();
             return Promise.resolve(m.exports)
         }else{
-            return this.doImport(name,parent||system.module).then(m=>m.exports);
+            return this.doImport(name,parent||system.module).then(m=>{
+                system.emit('import',m);
+                return m.exports;
+            });
         }
 
     }
@@ -53,6 +56,7 @@ export abstract class Loader {
                     value           : parent
                 });
             });
+
             return system.modules[name];
         });
     }
@@ -89,7 +93,7 @@ export abstract class Loader {
                 })
             }
         }
-        return Promise.all(requirements.map(r=>this.doLoadModule(r)));
+        return Promise.all(<any>requirements.map(r=>this.doLoadModule(r)));
     }
     /**
      * @internal
@@ -98,7 +102,8 @@ export abstract class Loader {
         return Object.keys(this.registrations).map(name=>{
             var m = this.registrations[name];
             delete this.registrations[name];
-            var sm = Module.add(name,m.requires,m.definer)
+            var sm = Module.add(name,m.requires,m.definer);
+
             Object.defineProperty(sm,'url',{
                 enumerable      : true,
                 configurable    : false,

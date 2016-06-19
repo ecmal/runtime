@@ -9,8 +9,17 @@ declare var global,process,require,__filename:string,__dirname:string;
 
 var system:System = <System> Object.create({
     import(module):Promise<any>{
-        return this.init().then(()=>{
-            return this.loader.import(module)
+        return this.init().then((cb)=>{
+            return this.loader.import(module).then(
+                m=>{
+                    cb(true);
+                    return m;
+                },
+                e=>{
+                    cb(false);
+                    throw e;
+                }
+            );
         })
     },
     init():Promise<any>{
@@ -22,9 +31,16 @@ var system:System = <System> Object.create({
             }
         })
     },
+    on(event,callback){
+        if(!this.events){
+            this.events = {};
+        }
+        this.events[event] = callback;
+    },
     register(name,requires,definer){
         var executed = false;
         if(!this.modules){
+            this.started = Date.now();
             this.modules = Object.create(null);
             initNodeJsDefaults();
             if(typeof setTimeout=='function'){
@@ -74,8 +90,23 @@ var system:System = <System> Object.create({
         function createModule(system,m){
             var module = Object.create({
                 define(type,value){
-                    this.members[value.name] = value;
-                    value.__reflection = type;
+                    switch(type){
+                        case 'class'    :
+                            value.__reflection = {type:type,module:this};
+                            this.members[value.name] = value;
+                            break;
+                        case 'function' :
+                            this.members[value.name] = value;
+                            break;
+                        case 'enum'     :
+                            value.__reflection = {type:type,module:this};
+                            this.members[value.constructor.name] = value;
+                            break;
+                        case 'interface' :
+                            this.members[value] = {type:type,module:this,value};
+                            this.exports[value] = this.members[value];
+                            break;
+                    }
                 },
                 export(name,value){
                     if(typeof name=="object"){
@@ -117,7 +148,6 @@ var system:System = <System> Object.create({
                     }
                 });
                 if(n.indexOf('runtime/')==0) {
-
                     m.definer.setters.forEach((s, i)=> {
                         s(modules[m.requires[i]].exports);
                     });
@@ -127,6 +157,5 @@ var system:System = <System> Object.create({
             executeModule('runtime/system',system,Module.extend);
             System.call(system,process);
         }
-       
     }
 });

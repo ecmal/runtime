@@ -65,7 +65,7 @@ export class Emitter {
                         }
                         return l.apply(options.target,args);
                     }else{
-                        return l.apply(void 0,...args);
+                        return l.apply(void 0,args);
                     }
                 });
             }
