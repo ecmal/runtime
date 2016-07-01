@@ -4,37 +4,31 @@ const EVENTS:symbol = Symbol('events');
 const LISTENER:symbol = Symbol('listener');
 
 export class Emitter {
-    public on(event:string,handler:Function):(options:any)=>void{
-        var events = this[EVENTS];
+    public on(event:string,handler:Function,options:any={}):void{
+        let events = this[EVENTS];
         if(!events){
             events = this[EVENTS] = Object.create(null);
         }
-        var listeners = events[event];
+        let listeners = events[event];
         if(!listeners){
             events[event] = [handler];
         }else{
             listeners.push(handler);
         }
-        return (options:any)=>{
-            handler[LISTENER] = Object.create(null);
-            for(var option in options){
-                handler[LISTENER][option] = options[option];
-            }
-        };
+        handler[LISTENER]=options;
     }
-    public once(event: string, handler: Function):(options:any)=>void {
-        var options = this.on(event,handler);
-        options({once:true});
-        return options;
+    public once(event: string, handler:Function,options:any={}):void{
+        options.once = true;
+        this.on(event,handler,options);
     }
     public off(event?:string,handler?:Function):void{
-        var events = this[EVENTS];
+        let events = this[EVENTS];
         if(events){
             if(!handler){
                 delete events[event];
                 return;
             }
-            var listeners = events[event];
+            let listeners = events[event];
             if(listeners){
                 events[event] = listeners = listeners.filter(l=>{
                     if(handler==l){
@@ -53,12 +47,12 @@ export class Emitter {
         }
     }
     public emit(event:string,...args:any[]):any[]{
-        var events = this[EVENTS];
+        let events = this[EVENTS];
         if(events){
-            var listeners = events[event];
+            let listeners = events[event];
             if(listeners){
                 return listeners.map(l=>{
-                    var options = l[LISTENER];
+                    let options = l[LISTENER];
                     if(options){
                         if(options.once){
                             this.off(event,l);

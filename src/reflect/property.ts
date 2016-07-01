@@ -1,10 +1,10 @@
 import {Member} from "./member";
 
 export class Property extends Member {
-    public setter():Function{
+    public get setter():Function{
         return this.descriptor.set
     }
-    public getter():Function{
+    public get getter():Function{
         return this.descriptor.get
     }
     public get(target:any){

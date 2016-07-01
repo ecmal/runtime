@@ -72,6 +72,15 @@ export class Class extends Interface {
         });
         return parent;
     }
+    public get parents():Class[] {
+        let parents = [];
+        let parent:Class = this.parent;
+        while(parent){
+            parents.push(parent);
+            parent = parent.parent;
+        }
+        return parents;
+    }
 
     public get flags():number{
         return this.getConstructor().flags;
@@ -148,14 +157,31 @@ export class Class extends Interface {
         }
     }
 
-    public getMembers(filter?:(m:Member)=>boolean){
-        var members = [];
-        for(var m in this.members){
+    public getMembers(filter?:(m:Member)=>boolean):Member[]{
+        let members = [];
+        for(let m in this.members){
             if(!filter || filter(this.members[m])){
                 members.push(this.members[m])
             }
         }
         return members;
+    }
+    public getAllMembers(filter?:(m:Member)=>boolean):Member[]{
+        let classes:Class[] = this.parents.concat([this]);
+        let members=Object.create(null);
+        let cls = classes.shift();
+        while(cls){
+            cls.getMembers((m:Member)=>{
+                if(filter(m)){
+                    members[m.key] = m;
+                    return true;
+                }else{
+                    return false;
+                }
+            });
+            cls = classes.shift();
+        }
+        return Object.keys(members).map(k=>members[k]);
     }
     public getConstructor():Constructor{
         return <Constructor>this.members[':constructor'];
@@ -265,8 +291,13 @@ export class Class extends Interface {
                 }else{
                     decorator.decorate(member);
                 }
+            }else
+            if(decorator['decorate']){
+                decorator['decorate'](member)
             }else{
-                console.info(decorator);
+                for(var i in decorator){
+                    member.metadata[i] = decorator[i];
+                }
             }
             return decorator;
         };

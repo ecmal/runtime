@@ -28,6 +28,9 @@ export class Member extends Declaration {
     public get descriptor():PropertyDescriptor{
         return Object.getOwnPropertyDescriptor(this.scope,this.name);
     }
+    public get key():string{
+        return `${this.isStatic?'.':':'}${this.name}`;
+    }
     public get isStatic():boolean{
         return Modifier.has(this.flags,Modifier.STATIC);
     }
@@ -67,7 +70,7 @@ export class Member extends Declaration {
         });
         Object.defineProperty(this,'id',{
             enumerable  : true,
-            value       : `${this.owner.id}${this.isStatic?'.':':'}${this.name}`
+            value       : `${this.owner.id}${this.key}`
         });
         if(!this.original){
             Object.defineProperty(this,'original',{
