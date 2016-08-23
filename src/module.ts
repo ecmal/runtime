@@ -67,7 +67,7 @@ export class Module extends Declaration implements Module {
         this.members = Object.create(null);
         this.exports = Object.create(null);
         this.exports[REFLECT] = this;
-        this.definer = definer(system,this);
+        this.definer = definer(system,this,system['jsx']);
     }
     /**
      * @internal

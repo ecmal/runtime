@@ -106,6 +106,12 @@ export class System extends Emitter implements System {
      */
     public constructor(process?){
         super();
+        Object.defineProperty(this,'jsx',{
+            enumerable   : false,
+            writable     : false,
+            configurable : false,
+            value        : {}
+        });
         Object.defineProperty(this,'module',{
             enumerable   : true,
             writable     : false,
