@@ -1,6 +1,7 @@
-///<reference path="./package"/>
+///<reference path="./package.ts"/>
+
 export class Path {
-    static SEP = '/';
+    static get SEP(){return '/'}
     static filename(path:String) {
         return path.split(Path.SEP).pop();
     }
@@ -13,7 +14,7 @@ export class Path {
     static normalize(path) {
         if (!path || path === '/') {
             return '/';
-        }
+        } 
         var prepend = (path[0] == '/' || path[0] == '.');
         var target = [], src, scheme, parts, token;
         if (path.indexOf('://') > 0) {

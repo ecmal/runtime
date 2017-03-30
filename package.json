@@ -1,16 +1,22 @@
 {
-  "name"          : "runtime",
-  "vendor"        : "ecmal",
-  "version"       : "0.0.12",
-  "registry"      : "github",
-  "format"        : "System",
-  "bundle"        : true,
-  "directories"   : {
-    "source"      : "src",
-    "output"      : "out",
-    "vendor"      : "out"
-  },
-  "libraries"     : {
-    "core"        : "0.0.8"
-  }
+    "name"              : "@ecmal/runtime",
+    "version"           : "0.0.1",
+    "description"       : "SystemJs Like Module Loader",
+    "license"           : "UNLICENSED",
+    "author"            : "Mamble Inc. <ecmal@mamble.co>",
+    "repository"        : "https://github.com/ecmal/runtime.git",
+    "contributors"      : ["Sergey Mamyan <sergey@mamble.co>"],
+    "homepage"          : "https://github.com/ecmal/runtime",
+    "bugs"              : "https://github.com/ecmal/runtime/issues",
+    "keywords"          : ["typescript","ecmal","system","runtime","loader"],
+    "types"             : "index.d.ts",
+    "engines"           : {},
+    "bundle"            : true,
+    "directories"       : {
+        "src"           : "./src",
+        "out"           : "./node_modules"
+    },
+    "dependencies"      : {
+        "@ecmal/core"   : "latest"
+    }
 }

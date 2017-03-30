@@ -1,0 +1,22 @@
+{
+    "ecmal":true,
+    "name":"@vendor/library",
+    "version": "0.0.1",
+    "description": "Test Library Project",
+    "license": "UNLICENSED",
+    "author": "Mamble Inc. <ecmal@mamble.co>",
+    "repository": "ecmal/runtime",
+    "contributors": [
+        "Sergey Mamyan <sergey@mamble.co>"
+    ],
+    "directories": {
+        "src" : "./src",
+        "out" : "../../node_modules"
+    },
+    "main": "index.js",
+    "types": "index.d.ts",
+    "bundle":true,
+    "libraries":{
+        "@ecmal/core":"latest"
+    }
+}

@@ -1,4 +1,4 @@
-///<reference path="./package"/>
+///<reference path="./package.ts"/>
 export * from "./loaders/base";
-export * from "./loaders/node";
-export * from "./loaders/browser";
+export * from "./loaders/app";
+export * from "./loaders/web";

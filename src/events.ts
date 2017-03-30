@@ -1,4 +1,4 @@
-///<reference path="./package"/>
+///<reference path="./package.ts"/>
 
 const EVENTS:symbol = Symbol('events');
 const LISTENER:symbol = Symbol('listener');

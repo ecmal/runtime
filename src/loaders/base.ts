@@ -4,72 +4,103 @@ import {Module} from "../module";
 export abstract class Loader {
 
     protected abstract detectRoot():void;
+    protected abstract loadProject(id:string,url:string):Promise<any>;
     protected abstract loadModule(id:string,url:string):Promise<any>;
-
-    private registrations:any;
+    protected current:string;
+    protected registrations:any;
+    protected projects:any;
 
     constructor(){
-        if(!system.root){
+        if(System.root=='~'){
             this.detectRoot();
-            Object.defineProperty(system,'root',{
+            Object.defineProperty(System,'root',{
                 enumerable:true,
                 configurable:false,
                 writable:false,
-                value:Path.resolve(Path.dirname(system.url),'..')
+                value:Path.resolve(Path.dirname(System.url),'../..')
             });
         }
+        Object.defineProperty(this,'projects',{
+            value:Object.create(null)
+        });
         Object.defineProperty(this,'registrations',{
             value:Object.create(null)
         });
     }
 
     public import(name:string,parent?:Module):Promise<any>{
-        if(system.modules[name]){
-            var m = <Module>system.modules[name];
-            m.execute();
-            return Promise.resolve(m.exports)
+        let m = Module.get(name)
+        if(m){
+            return Promise.resolve(m);
         }else{
-            return this.doImport(name,parent||system.module).then(m=>{
-                system.emit('import',m);
-                return m.exports;
-            });
+            return this.doImport(name).then(m=>m.exports);
         }
-
     }
     public register(name:string,requires:string[],definer:Function):any{
+        if(Array.isArray(name)){
+            definer = requires as any;
+            requires = name as any;
+            name = this.current;
+        }
         this.registrations[name] = {requires,definer};
     }
 
     /**
      * @internal
      */
-    private doImport(name:string,parent:Module):Promise<any>{
+    private doImport(name:string):Promise<any>{
         return this.doLoadModule(name).then(r=>this.doDefineModules()).then((modules:Module[])=>{
-            modules.forEach(m=>m.resolve());
             Module.get(name).execute();
             modules.forEach(m=>m.execute());
-            modules.forEach((m:Module)=>{
-                Object.defineProperty(m,'parent',{
-                    enumerable      : true,
-                    configurable    : false,
-                    writable        : false,
-                    value           : parent
-                });
-            });
-
-            return system.modules[name];
-        });
+            return Module.get(name);
+        })
     }
     /**
      * @internal
      */
-    private doLoadModule(id:string):Promise<any>{
-        this.registrations[id] = true;
-        var url = Path.resolve(system.root,`${id}.js`);
-        return this.loadModule(id,url).then(m=>{
-            this.registrations[id].url = url;
-            return this.doLoadDependencies()
+    private doLoadProject(id:string):Promise<any>{
+        if(!this.projects[id]){
+            var url = Path.resolve(System.root,`${id}/package.json`);
+            return this.loadProject(id,url).then(project=>{
+                project.id = id;
+                project.url = url;
+                this.projects[id] = project;
+                return project;
+            });
+        } else {
+            return Promise.resolve(this.projects[id]);
+        }
+    }
+    /**
+     * @internal
+     */
+    private doLoadModule(name:string):Promise<any>{
+        let loadModule = (id,bundle)=>{
+            this.registrations[id] = true;
+            var url = Path.resolve(System.root,`${bundle?bundle:id}.js`);
+            return this.loadModule(id,url).then(m=>{
+                try{
+                    this.registrations[id] = m;
+                    this.registrations[id].url = url;
+                }catch(e){
+                    console.info(id,url,e.message);
+                }
+                return this.doLoadDependencies();
+            },e=>{
+                let error = new Error(`Loading module "${id}" failed "${url}"`)
+                error.stack +=`\nCause: ${e.stack}`;
+                throw error;
+            })
+        };
+        let [fullName,projectName,moduleName] = name.match(/^(@[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+)(\/.*)?$/);
+        return this.doLoadProject(projectName).then(project=>{
+            let bundle = project.bundle?`${project.id}/index`:void 0;
+            if(!moduleName){
+                name = `${project.id}/${project.main.replace(/^(.*)\.js$/,'$1')||'index'}`;
+            }
+            return loadModule(name,bundle)
         })
+        
     }
     /**
      * @internal
@@ -87,7 +118,7 @@ export abstract class Loader {
                     }
                 });
                 reg.requires.forEach(r=>{
-                    if(!this.registrations[r] && !system.modules[r]){
+                    if(!this.registrations[r] && !Module.get(r)){
                         requirements.push(r)
                     }
                 })
@@ -108,7 +139,7 @@ export abstract class Loader {
                 enumerable      : true,
                 configurable    : false,
                 writable        : false,
-                value           : m.url || system.url
+                value           : m.url || System.url
             });
             return sm;
         });
