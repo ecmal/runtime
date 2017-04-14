@@ -11,7 +11,7 @@
     ],
     "directories": {
         "src" : "./src",
-        "out" : "../../node_modules"
+        "out" : "../../../node_modules"
     },
     "main": "index.js",
     "types": "index.d.ts",

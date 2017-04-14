@@ -14,7 +14,11 @@
     "bundle"            : true,
     "directories"       : {
         "src"           : "./src",
-        "out"           : "./node_modules"
+        "out"           : "../node_modules"
+    },
+    "scripts": {
+        "preinstall": "./script/install.js",
+        "postinstall": "./script/install.js"
     },
     "dependencies"      : {
         "@ecmal/core"   : "latest"

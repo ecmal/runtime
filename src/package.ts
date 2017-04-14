@@ -1,7 +1,7 @@
 /** @internal */
 declare var __extends,__awaiter,__generator,__decorate,__metadata;
 /** @internal */
-declare var __dirname,__filename,global,process,require,window,console,document,setTimeout,XMLHttpRequest;
+declare var __dirname,__filename,global,process,require,window,document,setTimeout,XMLHttpRequest;
 // module context
 declare var __moduleName:string;
 
@@ -38,6 +38,9 @@ namespace System {
         return doRegister(path,requires,definer);
     }
     
+    export function load(name:string):any{
+        return doImport(name);
+    }
     Object.defineProperty(System,'import',{
         configurable:true,
         value:(name:string)=>{
