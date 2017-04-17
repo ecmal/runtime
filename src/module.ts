@@ -74,8 +74,7 @@ export class Module extends Emitter  {
                 });
             }
             try{
-                definer.execute();
-                this.emit('execute');
+                Module.get('tslib').exports.execute(this,definer);
             }catch(ex){
                 var error = new Error(`module "${this.id}" execution error`);
                 error.stack +=`\ncause : \n${ex.stack}`;

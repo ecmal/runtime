@@ -3,3 +3,4 @@
 export * from "./decorators/bound";
 export * from "./decorators/cached";
 export * from "./decorators/properties";
+export * from "./decorators/metadata";

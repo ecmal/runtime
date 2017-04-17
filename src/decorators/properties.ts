@@ -19,6 +19,5 @@ export const Hidden:PropertyDecorator & MethodDecorator = (target:any,key:any,de
         return desc;
     }catch(ex){
         console.info(ex)
-    }
-    
+    }    
 }

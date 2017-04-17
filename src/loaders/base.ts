@@ -96,7 +96,7 @@ export abstract class Loader {
         return this.doLoadProject(projectName).then(project=>{
             let bundle = project.bundle?`${project.id}/index`:void 0;
             if(!moduleName){
-                name = `${project.id}/${project.main.replace(/^(.*)\.js$/,'$1')||'index'}`;
+                name = `${project.id}/${project.main?project.main.replace(/^(.*)\.js$/,'$1'):'index'}`;
             }
             return loadModule(name,bundle)
         })
