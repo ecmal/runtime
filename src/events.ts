@@ -66,3 +66,23 @@ export class Emitter {
         }
     }
 }
+
+export class Signal<T extends Function>{
+    emit:T;
+    on:(callback:T)=>T;
+    constructor(){
+        let listeners = [];
+        Object.defineProperty(this,'emit',{
+            value(...args){
+                listeners.forEach(l=>l(...args));
+            }
+        })
+        Object.defineProperty(this,'on',{
+            value(l){
+                if(listeners.indexOf(l)<0){
+                    listeners.push(l);
+                }
+            }
+        })
+    }
+}

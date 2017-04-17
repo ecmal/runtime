@@ -1,4 +1,4 @@
-export function Cached(target:any,key:string):any{
+export function cached(target:any,key:string):any{
     let desc = Object.getOwnPropertyDescriptor(target,key);
     if(desc && typeof(desc.get)=='function'){
         let initializer = desc.get;
