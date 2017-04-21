@@ -173,7 +173,8 @@ export abstract class ClassMirror extends Mirror {
                 value : mirror = Object.create(ProtoMirror.prototype,{
                     getId : {value:()=>`${this.getId()}.prototype`},
                     getName : {value:()=>`prototype`},
-                    getClass : { value:()=>this }
+                    getClass : { value:()=>this },
+                    getMembers : { value:()=>this.getMembers(false) }
                 })
             })
         }
@@ -186,6 +187,12 @@ export abstract class ClassMirror extends Mirror {
         let members = this.members.map(m=>`  ${m.toString()}`);
         let body = members.length?`{\n${members.join('\n')}\n}`:'';
         return `${this.constructor.name}(${this.getName()}${body}`;
+    }
+    public getMembers(isStatic?:boolean):FieldMirror[]{
+        if(typeof isStatic == 'undefined'){
+            return this.members;
+        }
+        return this.members.filter(m=>m.isStatic()==isStatic);
     }
 }
 export abstract class ProtoMirror extends Mirror {
