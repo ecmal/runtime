@@ -126,7 +126,6 @@ export abstract class Mirror {
         return this instanceof ParamMirror;
     }
 }
-
 export abstract class ClassMirror extends Mirror {
     private get members():FieldMirror[]{
         return Object.defineProperty(this,'members',{
@@ -135,10 +134,7 @@ export abstract class ClassMirror extends Mirror {
     }
     public abstract getModule():Module;
     public abstract getReturnType<T=any>():Constructor<T>;
-    public abstract getParamTypes<T=any>():Constructor<T>;
-
-    
-    
+    public abstract getParamTypes<T=any>():Constructor<T>;   
     public newMember(key:string,desc?:PropertyDescriptor,isStatic:boolean=true):FieldMirror{
         let member = this.getMember(key,isStatic);
         if(!member){
@@ -183,16 +179,16 @@ export abstract class ClassMirror extends Mirror {
     public getMember(key:string,isStatic=true):FieldMirror{
         return this.members.find(m=>(m.getName()==key && m.isStatic()==isStatic));
     }
-    public toString(){
-        let members = this.members.map(m=>`  ${m.toString()}`);
-        let body = members.length?`{\n${members.join('\n')}\n}`:'';
-        return `${this.constructor.name}(${this.getName()}${body}`;
-    }
     public getMembers(isStatic?:boolean):FieldMirror[]{
         if(typeof isStatic == 'undefined'){
             return this.members;
         }
         return this.members.filter(m=>m.isStatic()==isStatic);
+    }
+    public toString(){
+        let members = this.members.map(m=>`  ${m.toString()}`);
+        let body = members.length?`{\n${members.join('\n')}\n}`:'';
+        return `${this.constructor.name}(${this.getName()}${body}`;
     }
 }
 export abstract class ProtoMirror extends Mirror {
@@ -263,7 +259,6 @@ export abstract class MethodMirror extends FieldMirror {
         }
     }
 }
-
 export abstract class ParamMirror extends Mirror {
     public abstract getIndex():number;
     public abstract getMethod():MethodMirror;
