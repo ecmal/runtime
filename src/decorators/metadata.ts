@@ -11,7 +11,7 @@ export function meta(object:object)
 export function meta(key:string,value:any)
 export function meta(target:any,value?:any):MethodDecorator|PropertyDecorator|ParameterDecorator {
     let metas = target;
-    if(typeof target =='string'){
+    if(typeof target !='object'){
         metas = {[target]:value||true};
     }
     return (target,key:string,desc:PropertyDescriptor|number)=>{
@@ -21,6 +21,9 @@ export function meta(target:any,value?:any):MethodDecorator|PropertyDecorator|Pa
         }
         Object.keys(metas).forEach(k=>{
             mirror.setMetadata(k,metas[k]);
-        })
+        });
+        Object.getOwnPropertySymbols(metas).forEach(k=>{
+            mirror.setMetadata(k,metas[k]);
+        });
     }
 }
