@@ -2,6 +2,7 @@ import {Mirror} from "../reflect";
 
 export function Meta(object:object)
 export function Meta(key:string,value:any)
+export function Meta(key:any,value:any)
 export function Meta(target:any,value?:any):ClassDecorator{
     return meta(target,value);
 }
