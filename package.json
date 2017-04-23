@@ -12,6 +12,9 @@
     "types"             : "index.d.ts",
     "engines"           : {},
     "bundle"            : true,
+    "bin"               : {
+        "elr"           : "./bin/elr"
+    },
     "directories"       : {
         "src"           : "./src",
         "out"           : "../node_modules"
