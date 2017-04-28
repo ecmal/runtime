@@ -51,7 +51,8 @@ export abstract class Mirror {
     static get(target:Function):ClassMirror
     static get(target:Object):ProtoMirror
     static get(target:Object,key:string):FieldMirror;
-    static get(target:any,key?:string):Mirror{
+    static get(target:Object,key:string,index:number):ParamMirror;
+    static get(target:any,key?:string,index?:number):Mirror{
         let clazz:Function,proto:Object,isStatic:boolean;
         if(typeof target=='function' && typeof target.prototype=='object'){
             clazz = target;
@@ -70,7 +71,10 @@ export abstract class Mirror {
         }
         if(mirror && key){
             let o = mirror;
-            mirror = mirror.getMember(key);
+            mirror = mirror.getMember(key,false);
+            if(typeof index != 'undefined'){
+                mirror = mirror.getParameter(index);
+            }
             if(!mirror){
                 console.info(o,key)
             }
@@ -233,7 +237,7 @@ export abstract class MethodMirror extends FieldMirror {
             return result;
         })();
         let types = this.getParamTypes();
-        function createParam(index,name,type){
+        let createParam = (index,name,type) =>{
             return Object.create(ParamMirror.prototype,{
                 getId       : {value:()=>`${this.getId()}[${name}]`},
                 getIndex    : {value:()=>index},
@@ -241,7 +245,7 @@ export abstract class MethodMirror extends FieldMirror {
                 getName     : {value:()=>name},
                 getMethod   : {value:()=>this}
             })
-        }
+        };
         return Object.defineProperty(this,'parameters',{
             value:types.map((t,i)=>createParam(i,names[i],t))
         }).parameters
