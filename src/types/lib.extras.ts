@@ -1,5 +1,5 @@
 type Constructor<T> = new(...args: any[]) => T;
-type MapLike<T> = {
+type Dictionary<T> = {
     [s:string]:T;
 }
 
