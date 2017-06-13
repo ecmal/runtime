@@ -1,4 +1,4 @@
-/// <reference path="./core/index" />
+/// <reference path="./types/index" />
 
 /** @internal */
 declare var __extends, __awaiter, __generator, __decorate, __metadata;
