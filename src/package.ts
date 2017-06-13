@@ -294,4 +294,3 @@ namespace System {
     initErrorExtension();
     doBootstrap();
 }
-
