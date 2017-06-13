@@ -1,6 +1,6 @@
 {
     "name"              : "@ecmal/runtime",
-    "version"           : "0.0.1",
+    "version"           : "0.0.2",
     "description"       : "SystemJs Like Module Loader",
     "license"           : "UNLICENSED",
     "author"            : "Mamble Inc. <ecmal@mamble.co>",
@@ -12,14 +12,12 @@
     "types"             : "index.d.ts",
     "engines"           : {},
     "bundle"            : true,
-    "bin"               : {
-        "elr"           : "./bin/elr"
+    "scripts"           : {
+        "build"         : "elc package.json",
+        "release"       : "npm publish -f ./out/@ecmal/runtime"
     },
     "directories"       : {
         "src"           : "./src",
-        "out"           : "../node_modules"
-    },
-    "dependencies"      : {
-        "@ecmal/core"   : "latest"
+        "out"           : "./out"
     }
 }

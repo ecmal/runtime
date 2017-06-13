@@ -64,10 +64,12 @@ export abstract class Mirror {
             proto = target;
             isStatic = false;
         }
+        if(!clazz){
+            return null;
+        }
         let mirror = clazz[MIRROR];
         if(mirror && !isStatic){
             mirror = mirror.prototype;
-               
         }
         if(mirror && key){
             let o = mirror;
@@ -78,6 +80,9 @@ export abstract class Mirror {
             if(!mirror){
                 console.info(o,key)
             }
+        }else
+        if(mirror && mirror.isClass() && key==void 0 && typeof index=='number'){
+            mirror = mirror.getParameter(index);
         }
         
         return mirror;
@@ -131,6 +136,39 @@ export abstract class Mirror {
     }
 }
 export abstract class ClassMirror extends Mirror {
+    private get parameters():ParamMirror[]{
+        let value = this.getReturnType();
+        let names = (()=>{
+            var fnStr = value.toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '');
+            var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
+            if(result === null)
+                result = [];
+            return result;
+        })();
+        let types = this.getParamTypes();
+        let createParam = (index,name,type) =>{
+            return Object.create(ParamMirror.prototype,{
+                getId       : {value:()=>`${this.getId()}[${name}]`},
+                getIndex    : {value:()=>index},
+                getType     : {value:()=>type},
+                getName     : {value:()=>name},
+                getMethod   : {value:()=>this}
+            })
+        };
+        return Object.defineProperty(this,'parameters',{
+            value:types.map((t,i)=>createParam(i,names[i],t))
+        }).parameters
+    }
+    public getParameters(){
+        return this.parameters
+    }
+    public getParameter(name:number|string){
+        if(typeof name =='number'){
+            return this.getParameters()[name]
+        }else{
+            return this.getParameters().find(p=>p.getName()==name);
+        }
+    }
     private get members():FieldMirror[]{
         return Object.defineProperty(this,'members',{
             value:[]
@@ -138,7 +176,7 @@ export abstract class ClassMirror extends Mirror {
     }
     public abstract getModule():Module;
     public abstract getReturnType<T=any>():Constructor<T>;
-    public abstract getParamTypes<T=any>():Constructor<T>;   
+    public abstract getParamTypes<T=any>():Constructor<T>[];   
     public newMember(key:string,desc?:PropertyDescriptor,isStatic:boolean=true):FieldMirror{
         let member = this.getMember(key,isStatic);
         if(!member){
@@ -251,7 +289,7 @@ export abstract class MethodMirror extends FieldMirror {
         }).parameters
     }
     public abstract getParamTypes():Constructor<any>[];
-    public abstract getReturnType():Constructor<any>[];
+    public abstract getReturnType():Constructor<any>;
     public getParameters(){
         return this.parameters
     }

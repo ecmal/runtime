@@ -90,7 +90,7 @@ export class AppLoader extends Loader {
     protected evalModule(id:string,url:string,data:string){
         this.current = id;
         AppLoader.vm.runInThisContext(data,{
-            filename : url
+            filename : url,
         });
         this.current = null;
     }

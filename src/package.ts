@@ -1,39 +1,86 @@
+/// <reference path="./core/index" />
+
 /** @internal */
 declare var __extends, __awaiter, __generator, __decorate, __metadata;
 /** @internal */
 declare var __dirname, __filename, global, process, require, window, document, XMLHttpRequest;
-// module context
-declare var __moduleName: string;
+
+interface Error {
+    [s: string]: any;
+    cause(): Error;
+    cause(ex: Error): this;
+}
+class Module {
+    url: string;
+    exports: any;
+    requires: string[];
+}
+declare const module:Module;
+class System {
+    /**
+     * @internal
+     */
+    static QUEUE = [];
+}
 namespace System {
-    export type Module  = {
-        url : string;
-        exports : any;
-        requires : string[];
-        export(name: string, value: any): void;
-    }
-    export type Modules = {
-        [k: string]: Module
+    function initErrorExtension() {
+        let CAUSE = Symbol('cause');
+        Object.defineProperty(Error, 'prepareStackTrace', {
+            value(error, stack) {
+                let cause = error[CAUSE];
+                while (cause) {
+                    error.stack = `${error.stack}\n  Cause ${cause.stack}`
+                    cause = cause[CAUSE];
+                }
+                if (error.stack) {
+                    error.stack = error.stack.replace(/^(Error):\s+(.*)/, `${error.constructor.name}: $2`)
+                }
+            }
+        });
+        Object.defineProperty(Error.prototype, 'toJSON', {
+            configurable: true,
+            value() {
+                let stack = this.stack.split('\n');
+                return {
+                    type: this.constructor.name,
+                    message: this.message,
+                    stack: stack
+                }
+            }
+        })
+        Object.defineProperty(Error.prototype, 'cause', {
+            value() {
+                if (arguments.length == 0) {
+                    return this[CAUSE];
+                } else {
+                    this[CAUSE] = arguments[0];
+                    return this;
+                }
+            }
+        })
     }
 
-    /** @internal */
-    export type ModuleSetter = (exports: any) => void;
-    /** @internal */
-    export type ModuleDefinition = {
-        setters : ModuleSetter[],
-        execute : () => void
+    export type Modules = {
+        readonly [k: string]: Module;
     }
-    /** @internal */
-    export type ModuleDefiner = (exporter, context) => ModuleDefinition;
+    export interface ModuleSetter {
+        (exports: any): void
+    }
+    export interface ModuleExporter {
+        (name: string, value: any): void;
+        (exports: any): void;
+    }
+    export interface ModuleExecutor {
+        setters?: ModuleSetter[];
+        execute?: () => void;
+    }
+    export interface ModuleDefiner {
+        (exporter: ModuleExporter, module: Module): ModuleExecutor | void
+    }
     export const root: string = '~';
     export const url: string = '~';
     export const modules: Modules = Object.create(null);
-    /** @internal */
-    export function register(requires: string[], definer: ModuleDefiner)
-    /** @internal */
-    export function register(path: string, requires: string[], definer: ModuleDefiner)
-    /** @internal */
-    export function register(path: string | string[], requires: string[] | ModuleDefiner, definer?: ModuleDefiner)
-    {
+    export function register(path: string, requires: string[], definer: ModuleDefiner) {
         return doRegister(path, requires, definer);
     }
     export function load(name: string): any {
@@ -46,45 +93,45 @@ namespace System {
         }
     })
     class TsLib {
-        execute(module,definer){
-            this.__context=module;
+        execute(module, definer) {
+            this.__context = module;
             definer.execute();
             this.__context = null;
-            if(typeof module.emit =='function'){
+            if (typeof module.emit == 'function') {
                 module.emit('execute');
             }
         }
-        __context:any;
+        __context: any;
         __extends(d, b) {
             if (b) {
                 Object.setPrototypeOf(d, b);
                 Object.setPrototypeOf(d.prototype, b.prototype);
             }
             Object.defineProperty(d.prototype, 'constructor', {
-                configurable    : true,
-                value           : d
+                configurable: true,
+                value: d
             });
         }
         __awaiter(thisArg, _arguments, P, generator) {
             return new Promise(function (resolve, reject) {
                 function fulfilled(value) {
-                    try { 
-                        step(generator.next(value)); 
+                    try {
+                        step(generator.next(value));
                     } catch (e) {
-                        reject(e); 
+                        reject(e);
                     }
                 }
-                function rejected(value) { 
-                    try { 
-                        step(generator["throw"](value)); 
-                    } catch (e) { 
-                        reject(e); 
-                    } 
+                function rejected(value) {
+                    try {
+                        step(generator["throw"](value));
+                    } catch (e) {
+                        reject(e);
+                    }
                 }
                 function step(result) {
                     result.done ? resolve(result.value) : new Promise(function (resolve) {
-                        resolve(result.value); 
-                    }).then(fulfilled, rejected); 
+                        resolve(result.value);
+                    }).then(fulfilled, rejected);
                 }
                 step((generator = generator.apply(thisArg, _arguments || [])).next());
             });
@@ -121,7 +168,7 @@ namespace System {
             if (typeof Reflect === "object" && typeof Reflect['decorate'] === "function") {
                 r = Reflect['decorate'](decorators, target, key, desc);
             } else {
-                for (var i = decorators.length - 1; i >= 0; i--) { 
+                for (var i = decorators.length - 1; i >= 0; i--) {
                     if (d = decorators[i]) {
                         r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
                     }
@@ -132,25 +179,25 @@ namespace System {
         __metadata(name, value) {
             if (typeof Reflect === "object" && typeof Reflect['metadata'] === "function") {
                 return Reflect['metadata'](name, value, this.__context)
-            }else{
-                return (target,key?,desc?:PropertyDescriptor)=>{
-                    Mirror.new(target,key,desc).setMetadata(name,value);
+            } else {
+                return (target, key?, desc?: PropertyDescriptor) => {
+                    Mirror.new(target, key, desc).setMetadata(name, value);
                     return desc;
                 }
             }
         }
         __param(paramIndex, decorator) {
-            return function (target, key) { 
+            return function (target, key) {
                 decorator(target, key, paramIndex);
             }
         }
     }
-    let tslib:TsLib = new TsLib();
+    let tslib: TsLib = new TsLib();
     let imports: any = Object.create(null);
     let platform: "app" | "web";
     let globals: any;
     let Mirror: any;
-    
+
     // private api 
     function doRegister(...args) {
         let id: string = arguments[0];
@@ -176,7 +223,11 @@ namespace System {
                     }
                 }
         }, module);
-        modules[id] = module;
+        Object.defineProperty(modules, id, {
+            enumerable: true,
+            configurable: true,
+            value: module
+        })
     }
     function doImport(name: string): Promise<any> {
         return new Promise((accept, reject) => {
@@ -185,14 +236,14 @@ namespace System {
     }
     function doExecute(id) {
         let module: any = modules[id];
-        if (module.definer) {
+        if (module && module.definer) {
             let definer = module.definer;
             let requires = module.requires;
             delete module.definer;
             requires.forEach((r, i) => {
                 definer.setters[i](doExecute(r))
             });
-            tslib.execute(module,definer);
+            tslib.execute(module, definer);
         }
         return module.exports;
     }
@@ -212,30 +263,35 @@ namespace System {
             }
     }
     function doInitialize() {
-        Object.keys(modules).forEach(id => doExecute(id));
+        doExecute('@ecmal/runtime/module')
+        doExecute('@ecmal/runtime/system')
+        doExecute('@ecmal/runtime/reflect')
+
         let ModuleClass = modules['@ecmal/runtime/module'].exports.Module;
         let SystemClass = modules['@ecmal/runtime/system'].exports.System;
         Object.keys(modules).forEach(id => {
-             Object.setPrototypeOf(modules[id], ModuleClass.prototype)
+            Object.setPrototypeOf(modules[id], ModuleClass.prototype)
         });
         Object.setPrototypeOf(System, SystemClass.prototype);
         Mirror = modules['@ecmal/runtime/reflect'].exports.Mirror;
+
         SystemClass.call(System, platform, globals, imports);
-    }
-    
-    function doBootstrap() {
-        platform = doDetectPlatform();
-        
-        Object.defineProperties(globals, {
-            System : { value: System },
-        })
-        doRegister('tslib',[],function(exports, context){
-            context.exports = tslib;
-        })
-        
-        setTimeout(doInitialize, 0);
+        Object.keys(modules).forEach(id => {
+            doExecute(id);
+        });
     }
 
-    doBootstrap();    
+    function doBootstrap() {
+        platform = doDetectPlatform();
+        Object.defineProperties(globals, {
+            System: { value: System },
+        })
+        doRegister('tslib', [], function (exports, context) {
+            context.exports = tslib;
+        })
+        setTimeout(doInitialize, 0);
+    }
+    initErrorExtension();
+    doBootstrap();
 }
 

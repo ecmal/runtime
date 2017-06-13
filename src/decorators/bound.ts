@@ -5,5 +5,3 @@ export function bound<T>(target:any,key:string,desc:TypedPropertyDescriptor<Func
         }
     }
 }
-
-

@@ -5,7 +5,7 @@ import {WebLoader} from "./loader";
 import {Loader} from "./loader";
 declare var global:any;
 declare var window:any;
-
+declare var __moduleName;
 
 export class System extends Emitter {
     public url      : string;
