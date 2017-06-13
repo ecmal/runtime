@@ -3,8 +3,7 @@ export const CONTEXT = Symbol('target');
 export function inject(target:Object,key:string,desc?:PropertyDescriptor):any{
     let mirror = Mirror.get(target,key);
     if(mirror && mirror.isField()){
-        let name = mirror.getName();
-        let type = mirror.getType();
+       
         if(!desc){
             desc = mirror.getDescriptor() || {
                 writable     : true,
@@ -16,6 +15,8 @@ export function inject(target:Object,key:string,desc?:PropertyDescriptor):any{
         delete desc.writable;
         delete desc.value;
         desc.get = function(){
+            let name = mirror.getName();
+            let type = mirror.getType();
             let value = Object.create(type.prototype,{
                 [CONTEXT]:{value:{target:this,property:name}}
             });
@@ -29,6 +30,8 @@ export function inject(target:Object,key:string,desc?:PropertyDescriptor):any{
             return value;
         };
         desc.set = function(value){
+            let name = mirror.getName();
+            let type = mirror.getType();
             if(value instanceof type){
                 Object.defineProperty(this,name,{
                     writable,

@@ -79,12 +79,8 @@ export abstract class Loader {
             this.registrations[id] = true;
             var url = Path.resolve(System.root,`${bundle?bundle:id}.js`);
             return this.loadModule(id,url).then(m=>{
-                try{
-                    this.registrations[id] = m;
-                    this.registrations[id].url = url;
-                }catch(e){
-                    console.info(id,url,e.message);
-                }
+                this.registrations[id] = m;
+                this.registrations[id].url = url;
                 return this.doLoadDependencies();
             },e=>{
                 let error = new Error(`Loading module "${id}" failed "${url}"`)

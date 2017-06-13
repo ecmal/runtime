@@ -16,12 +16,8 @@ export function final(target:any,key:any,desc?:any):any {
 
 export type hidden = PropertyDecorator & MethodDecorator;
 export function hidden(target:any,key:any,desc?:any):any{
-    try{
-        desc = desc || Object.getOwnPropertyDescriptor(target,key) || {configurable:true,writable:true};
-        desc.enumerable = false;
-        Object.defineProperty(target,key,desc);
-        return desc;
-    }catch(ex){
-        console.info(ex)
-    }    
+    desc = desc || Object.getOwnPropertyDescriptor(target,key) || {configurable:true,writable:true};
+    desc.enumerable = false;
+    Object.defineProperty(target,key,desc);
+    return desc;    
 }
