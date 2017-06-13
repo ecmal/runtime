@@ -1,5 +1,5 @@
 type Constructor<T> = new(...args: any[]) => T;
-type Dictionary<T> = {
+type Dictionary<T=any> = {
     [s:string]:T;
 }
 
